@@ -31,7 +31,16 @@ init_logging_semaphore(void)
         err_print("cannot create named semaphore");
         exit(EXIT_FAILURE);
     } /* end if */
-} /* end of set_logging_semaphore */
+} /* end of init_logging_semaphore */
+
+void
+free_logging_semaphore(void)
+{
+	if (log_sem != NULL)
+	{
+		sem_close(log_sem);
+	}
+} /* end of free_logging_semaphore */
 
 
 void

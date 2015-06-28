@@ -72,7 +72,7 @@ int server_handle_client(int sd)
 
 		
 		int html_legth = (int)strlen(html);
-		char* response = http_create_header(html_legth, 200);
+		char* response = http_create_header(html_legth, 416);
 
 
 		
@@ -98,7 +98,7 @@ int server_handle_client(int sd)
 
 int server_accept_clients(int sd)
 {
-	int retcode, newsd; //new socket descriptor
+	int retcode = 0, newsd; //new socket descriptor
 	struct sockaddr_in from_client;
 	socklen_t from_client_len = 0;
 	
@@ -113,7 +113,7 @@ int server_accept_clients(int sd)
 		{
 			retcode = newsd;
 			//break;
-			return 0;
+			//return 0;
 			//TODO: Error!!
 		}
 		else
@@ -131,8 +131,9 @@ int server_accept_clients(int sd)
 				//printf("child process: [%i]\n",getpid());			
 
 				server_handle_client(newsd);
+				retcode = 1;
 				//free(processStartTimeBuffer);
-				exit(0);
+				//exit(0);
 			} else /* parent process */
 			{
 				close(newsd);

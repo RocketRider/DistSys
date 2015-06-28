@@ -112,6 +112,8 @@ get_options(int argc, char *argv[], prog_options_t *opt)
     opt->server_addr  = NULL;
     opt->verbose      =    0;
     opt->timeout      =  120;
+    opt->log_fd 	  = NULL;
+    opt->server_addr  = NULL;
 
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_socktype = SOCK_STREAM;
@@ -235,6 +237,7 @@ int
 main(int argc, char *argv[])
 {
     int retcode = EXIT_SUCCESS;
+    int ret = 0;
     prog_options_t my_opt;
 	int sd;
 
@@ -266,17 +269,26 @@ main(int argc, char *argv[])
     sd = server_start(my_opt.server_port);
     if (sd > 0 )
     {
-		while(server_running) {
-			server_accept_clients(sd);
+		while(server_running && ret == 0) {
+			ret = server_accept_clients(sd);
 		}
 	}
     
-    
-    //while(server_running) {
-    //    pause();
-    //} /* end while */
-
     printf("[%d] Good Bye...\n", getpid());
+    
+
+    //Free options
+    free(my_opt.log_filename);my_opt.log_filename = NULL;
+    free(my_opt.root_dir);my_opt.root_dir = NULL;
+    free(my_opt.progname);my_opt.progname = NULL;
+    freeaddrinfo(my_opt.server_addr);my_opt.server_addr  = NULL;
+
+    if (my_opt.log_fd != NULL)
+    {
+    	fclose(my_opt.log_fd);my_opt.log_fd = NULL;
+    }
+    free_logging_semaphore();
+
     exit(retcode);
 } /* end of main */
 

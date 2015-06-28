@@ -48,13 +48,13 @@ http_status_entry_t http_status_list[] = {
 
 
 const char *http_reply_header=
-"HTTP/1.1 200 OK \n"
+"HTTP/1.1 200 OK                              \n"
 "Date: Sun, 22 Aug 2004 19:07:45 GMT \n"
 "Server: DistSys \n"
 //"Last-Modified: Thu, 22 Apr 2004 15:40:42 GMT \n"
 //"ETag: 'ec637-12ee-4087e77a' \n"
 "Accept-Ranges: bytes \n"
-"Content-Length:            \n"
+"Content-Length:             \n"
 "Connection: close \n"
 "Content-Type: text/html \n"
 "\n";
@@ -62,34 +62,54 @@ const char *http_reply_header=
 
 char* http_create_header(int html_legth, int status_code)
 {
-	//TODO Status Code
+
 
 	//Format date:
-	char time_str[30];
+	char time_str[30] = "";
 	time_t t = time(NULL);
 	struct tm *my_tm = gmtime(&t);
 	strftime(time_str, 29, "%a, %d %b %Y %H:%M:%S GMT", my_tm);
 
 	//create response
-	//char response[strlen(http_reply_header)+1];
 	char* response = malloc(strlen(http_reply_header)+1);
 	memcpy(response, http_reply_header, strlen(http_reply_header) + 1);
-	//char html_res[strlen(html)+1];
-	//memcpy(html_res, html, strlen(html) + 1);
 
 	//Set date field
 	char *date_pos = strstr(response, "Date:");
-	memcpy(date_pos + 6, time_str, strlen(time_str));//29);
+	memcpy(date_pos + 6, time_str, strlen(time_str));
+
+
+	//Set status Code
+	if (status_code != HTTP_STATUS_OK)
+	{
+		int http_status_list_index = 0;
+		int http_status_list_size = sizeof(http_status_list)/sizeof(http_status_list[0]);
+
+		for(http_status_list_index = 0; http_status_list_index < http_status_list_size; http_status_list_index++){
+		    if(http_status_list[http_status_list_index].code == status_code)
+		    {
+		    	break;
+		    }
+		}
+		if (http_status_list_index >= http_status_list_size)
+		{
+			//TODO code not found!!!
+		}
+
+
+		char *http_staus_code_pos = strstr(response, "HTTP/1.1");
+		char temp[36] = "";
+		sprintf(temp, "%d %s", status_code, http_status_list[http_status_list_index].text);
+		memcpy(http_staus_code_pos + 9, temp, strlen(temp));
+	}
 
 	//Set Content-Length field
 	char *length_pos = strstr(response, "Content-Length:");
-	char temp[11]; //max 10GB
+	char temp[12] = ""; //max 100GB
 	sprintf(temp, "%d", html_legth);
 	memcpy(length_pos + 16, temp, strlen(temp));
 
 
-	//char *time_pos = strstr(html_res, "Time:");
-	//memcpy(time_pos + 6, time_str, strlen(time_str));
 
 	return response;
 }
