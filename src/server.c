@@ -36,7 +36,7 @@
 
 
 
-char *html=
+char *html_test=
 "<!DOCTYPE html PUBLIC '-//IETF//DTD HTML 2.0//EN'>\n"
 "<HTML>\n"
 "   <HEAD>\n"
@@ -53,11 +53,97 @@ char *html=
 "\r\n"
 "\r\n";
 
+char *html_500=
+"<!DOCTYPE html PUBLIC '-//IETF//DTD HTML 2.0//EN'>\n"
+"<HTML>\n"
+"   <HEAD>\n"
+"      <TITLE>\n"
+"         500 - Internal Server Error\n"
+"      </TITLE>\n"
+"   </HEAD>\n"
+"<BODY>\n"
+"   <H1>500 - Internal Server Error</H1>\n"
+"   <P>The server had an internal error!</P>\n"
+"</BODY>\n"
+"</HTML>\n"
+"\r\n"
+"\r\n";
+
+
+
+
+
+int static server_answer_error(int sd, int error_code)
+{
+	int ret;
+	char* html;
+	switch (error_code)
+	{
+	//TODO
+	default:
+	case HTTP_STATUS_INTERNAL_SERVER_ERROR:
+		error_code = HTTP_STATUS_INTERNAL_SERVER_ERROR;
+		html = html_500;
+		break;
+	}
+
+	int html_length = (int)strlen(html);
+	char* response = http_create_header(error_code, SERV_NAME, NULL, "text/html", " ", html_length);
+	if (response == NULL)
+	{
+		perror("SERVER: create error response header failed!");
+		return -1;
+	}
+	ret = write_to_socket(sd, response, strlen(response), SERV_WRITE_TIMEOUT);
+	if (ret < 0)
+	{
+		perror("SERVER: failed to send error response header!");
+		free(response);response = NULL;
+		return -1;
+	}
+	ret = write_to_socket(sd, html, html_length, SERV_WRITE_TIMEOUT);
+	if (ret < 0)
+	{
+		perror("SERVER: failed to send error response!");
+		free(response);response = NULL;
+		return -1;
+	}
+
+	free(response);response = NULL;
+	return 0;
+}
+
+
+int static server_answer(int sd, char* url)
+{
+	int ret;
+	int html_length = (int)strlen(html_test);
+	char* response = http_create_header(200, SERV_NAME, NULL, "text/html", " ", html_length);
+	if (response == NULL)
+	{
+		perror("SERVER: create response header failed!");
+		server_answer_error(sd, HTTP_STATUS_INTERNAL_SERVER_ERROR);
+		return -1;
+	}
+
+	printf("Response:\n");
+	ret = write_to_socket(sd, response, strlen(response), SERV_WRITE_TIMEOUT);
+	ret = write_to_socket(sd, html_test, html_length, SERV_WRITE_TIMEOUT);//TODO check return code!!!
+	printf("ret write %d\n", ret);
+
+	printf("%.*s", (int)strlen(response), response);
+	printf("%.*s", (int)strlen(html_test), html_test);
+
+	free(response);response = NULL;
+
+	return 0;
+}
+
 
 int server_handle_client(int sd)
 {
-	char buf[SERV_BUFSIZE];
-	int cc; //charachter count
+	char buf[HTTP_MAX_HEADERSIZE] = "";
+	int cc = 0; //charachter count
 	struct socket_info info;
 	int ret;
 	
@@ -65,31 +151,24 @@ int server_handle_client(int sd)
 	get_socket_name(sd, &info);
 	printf("IP: %s, Port: %d\n\n", info.addr, info.port);
 	
-	//Read message:
-	while ((cc = read(sd, buf, SERV_BUFSIZE)) > 0)
+	do
+	{
+		ret = read_from_socket (sd, buf + cc, HTTP_MAX_HEADERSIZE - cc, SERV_READ_TIMEOUT);
+		cc += ret;
+	}
+	while (ret >= 0 && strstr(buf, "\r\n\r\n") == NULL && cc < HTTP_MAX_HEADERSIZE);
+
+	if (ret < 0 || cc <= 0)
+	{
+		perror("SERVER: receiving request failed!");
+		server_answer_error(sd, HTTP_STATUS_BAD_REQUEST);
+	}
+	else
 	{
 		printf("Request: \n%.*s\n", cc, buf);
-
 		
-		int html_length = (int)strlen(html);
-		char* response = http_create_header(200, SERV_NAME, NULL, "text/html", " ", html_length);
-
-
-		
-		printf("Response:\n");
-		ret = write_to_socket(sd, response, strlen(response), SERV_WRITE_TIMEOUT);
-		ret = write_to_socket(sd, html, html_length, SERV_WRITE_TIMEOUT);//TODO check return code!!!
-		printf("ret write %d\n", ret);
-		
-		printf("%.*s", (int)strlen(response), response);
-		printf("%.*s", (int)strlen(html), html);
-
-		free(response);response = NULL;
-		
-	}
-	if (cc < 0)
-	{
-		//TODO: Error
+		//TODO Parse HTTP Header
+		ret = server_answer(sd, "");
 	}
 	
 	close(sd);

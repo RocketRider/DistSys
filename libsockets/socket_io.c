@@ -21,7 +21,7 @@
 
 #include "socket_io.h"
 
-
+//maxtime in seconds
 int
 select_socket_fd (int fd, int maxtime, int writep)
 {
