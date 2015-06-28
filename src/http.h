@@ -10,6 +10,8 @@
 #ifndef _HTTP_H
 #define _HTTP_H
 
+#define HTTP_MAX_HEADERSIZE					8190 //Also used by apache server
+
 typedef enum http_method {
     HTTP_METHOD_GET = 0,
     HTTP_METHOD_HEAD,
@@ -48,7 +50,7 @@ typedef struct http_status_entry {
 
 extern http_method_entry_t http_method_list[];
 extern http_status_entry_t http_status_list[];
-extern char* http_create_header(int html_legth, int status_code);
+extern char* http_create_header(int status_code, char* server, time_t* last_modified, char* content_type, char* location, int html_length);
 
 #endif
 

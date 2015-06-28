@@ -68,22 +68,23 @@ int server_handle_client(int sd)
 	//Read message:
 	while ((cc = read(sd, buf, SERV_BUFSIZE)) > 0)
 	{
-		printf("Request: \n%.*s\n", cc,buf);
+		printf("Request: \n%.*s\n", cc, buf);
 
 		
-		int html_legth = (int)strlen(html);
-		char* response = http_create_header(html_legth, 416);
+		int html_length = (int)strlen(html);
+		char* response = http_create_header(200, SERV_NAME, NULL, "text/html", " ", html_length);
 
 
 		
 		printf("Response:\n");
-		ret = write(sd, response, strlen(response));
-		ret = write(sd, html, html_legth);//TODO!!!
+		ret = write_to_socket(sd, response, strlen(response), SERV_WRITE_TIMEOUT);
+		ret = write_to_socket(sd, html, html_length, SERV_WRITE_TIMEOUT);//TODO check return code!!!
 		printf("ret write %d\n", ret);
 		
 		printf("%.*s", (int)strlen(response), response);
 		printf("%.*s", (int)strlen(html), html);
-		free(response);
+
+		free(response);response = NULL;
 		
 	}
 	if (cc < 0)

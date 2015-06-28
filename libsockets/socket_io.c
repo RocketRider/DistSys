@@ -61,6 +61,7 @@ read_from_socket (int fd, char *buf, int len, int timeout)
 } /* end of read_from_socket */
 
 
+//timeout in seconds
 int
 write_to_socket (int fd, char *buf, int len, int timeout)
 {

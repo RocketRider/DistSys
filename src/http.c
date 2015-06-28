@@ -47,76 +47,73 @@ http_status_entry_t http_status_list[] = {
 };
 
 
-const char *http_reply_header=
-"HTTP/1.1 200 OK                              \n"
-"Date: Sun, 22 Aug 2004 19:07:45 GMT \n"
-"Server: DistSys \n"
-//"Last-Modified: Thu, 22 Apr 2004 15:40:42 GMT \n"
-//"ETag: 'ec637-12ee-4087e77a' \n"
-"Accept-Ranges: bytes \n"
-"Content-Length:             \n"
-"Connection: close \n"
-"Content-Type: text/html \n"
-"\n";
-
-
-char* http_create_header(int html_legth, int status_code)
+char* http_create_header(int status_code, char* server, time_t* last_modified, char* content_type, char* location, int html_length)
 {
+	char* response = malloc(HTTP_MAX_HEADERSIZE);
+	if (response == NULL)
+	{
+		perror("HTTP_HEADER: Can't allocate memory!");
+		return NULL;
+	}
+	memcpy(response, "HTTP/1.1 ", 10);
 
 
-	//Format date:
-	char time_str[30] = "";
+	//Status Code
+	int http_status_list_index = 0;
+	int http_status_list_size = sizeof(http_status_list)/sizeof(http_status_list[0]);
+
+	for(http_status_list_index = 0; http_status_list_index < http_status_list_size; http_status_list_index++){
+		if(http_status_list[http_status_list_index].code == status_code)
+		{
+			break;
+		}
+	}
+	if (http_status_list_index >= http_status_list_size)
+	{
+		perror("HTTP_HEADER: Unknown status code!");
+		free(response);response = NULL;
+		return NULL;
+	}
+	sprintf(response + strlen(response), "%d %s\n", status_code, http_status_list[http_status_list_index].text);
+
+
+	//Date
 	time_t t = time(NULL);
 	struct tm *my_tm = gmtime(&t);
-	strftime(time_str, 29, "%a, %d %b %Y %H:%M:%S GMT", my_tm);
+	strftime(response + strlen(response), HTTP_MAX_HEADERSIZE - strlen(response), "Date: %a, %d %b %Y %H:%M:%S GMT\n", my_tm);
 
-	//create response
-	char* response = malloc(strlen(http_reply_header)+1);
-	memcpy(response, http_reply_header, strlen(http_reply_header) + 1);
+	//Server
+	sprintf(response + strlen(response), "Server: %s\n", server);
 
-	//Set date field
-	char *date_pos = strstr(response, "Date:");
-	memcpy(date_pos + 6, time_str, strlen(time_str));
-
-
-	//Set status Code
-	if (status_code != HTTP_STATUS_OK)
+	//Last-Modified
+	if (last_modified != NULL)
 	{
-		int http_status_list_index = 0;
-		int http_status_list_size = sizeof(http_status_list)/sizeof(http_status_list[0]);
-
-		for(http_status_list_index = 0; http_status_list_index < http_status_list_size; http_status_list_index++){
-		    if(http_status_list[http_status_list_index].code == status_code)
-		    {
-		    	break;
-		    }
-		}
-		if (http_status_list_index >= http_status_list_size)
-		{
-			//TODO code not found!!!
-		}
-
-
-		char *http_staus_code_pos = strstr(response, "HTTP/1.1");
-		char temp[36] = "";
-		sprintf(temp, "%d %s", status_code, http_status_list[http_status_list_index].text);
-		memcpy(http_staus_code_pos + 9, temp, strlen(temp));
+		my_tm = gmtime(last_modified);
+		strftime(response + strlen(response), HTTP_MAX_HEADERSIZE - strlen(response), "Last-Modified: %a, %d %b %Y %H:%M:%S GMT\n", my_tm);
 	}
 
-	//Set Content-Length field
-	char *length_pos = strstr(response, "Content-Length:");
-	char temp[12] = ""; //max 100GB
-	sprintf(temp, "%d", html_legth);
-	memcpy(length_pos + 16, temp, strlen(temp));
+	//Accept-Ranges
+	sprintf(response + strlen(response), "Accept-Ranges: bytes\n");
 
+	//Content-Length
+	sprintf(response + strlen(response), "Content-Length: %d\n", html_length);
 
+	//Content-Type
+	sprintf(response + strlen(response), "Content-Type: %s\n", content_type);
 
+	//Location
+	if (strlen(location)>(HTTP_MAX_HEADERSIZE - strlen(response) - 11 - 20 - 1))
+	{
+		perror("HTTP_HEADER: Location is to long for the defined header size!");
+		free(response);response = NULL;
+		return NULL;
+	}
+	sprintf(response + strlen(response), "Location: %s\n", location);
+
+	//Connection
+	sprintf(response + strlen(response), "Connection: close \n\n");
 	return response;
 }
-
-
-
-
 
 
 
