@@ -29,6 +29,7 @@
 #include "time.h"
 #include "http.h"
 
+
 #include "../libsockets/connect_tcp.h"
 #include "../libsockets/passive_tcp.h"
 #include "../libsockets/socket_io.h"
@@ -53,21 +54,7 @@ char *html_test=
 "\r\n"
 "\r\n";
 
-char *html_500=
-"<!DOCTYPE html PUBLIC '-//IETF//DTD HTML 2.0//EN'>\n"
-"<HTML>\n"
-"   <HEAD>\n"
-"      <TITLE>\n"
-"         500 - Internal Server Error\n"
-"      </TITLE>\n"
-"   </HEAD>\n"
-"<BODY>\n"
-"   <H1>500 - Internal Server Error</H1>\n"
-"   <P>The server had an internal error!</P>\n"
-"</BODY>\n"
-"</HTML>\n"
-"\r\n"
-"\r\n";
+
 
 
 
@@ -76,16 +63,20 @@ char *html_500=
 int static server_answer_error(int sd, int error_code)
 {
 	int ret;
-	char* html;
-	switch (error_code)
-	{
-	//TODO
-	default:
-	case HTTP_STATUS_INTERNAL_SERVER_ERROR:
-		error_code = HTTP_STATUS_INTERNAL_SERVER_ERROR;
-		html = html_500;
-		break;
+	char* html = "";
+	/*
+	//Status Code
+	int http_status_list_index = 0;
+	int http_status_list_size = sizeof(http_status_list)/sizeof(http_status_list[0]);
+
+	for(http_status_list_index = 0; http_status_list_index < http_status_list_size; http_status_list_index++){
+		if(http_status_list[http_status_list_index].code == error_code)
+		{
+			html = http_status_list[http_status_list_index].html;
+			break;
+		}
 	}
+	 */
 
 	int html_length = (int)strlen(html);
 	char* response = http_create_header(error_code, SERV_NAME, NULL, "text/html", " ", html_length);
@@ -151,12 +142,18 @@ int server_handle_client(int sd)
 	get_socket_name(sd, &info);
 	printf("IP: %s, Port: %d\n\n", info.addr, info.port);
 	
+	clock_t t1, t2; //Make sure the max timeout is not more then 2x SERV_READ_TIMEOUT
+	float diff;
+	t1 = clock();
 	do
 	{
 		ret = read_from_socket (sd, buf + cc, HTTP_MAX_HEADERSIZE - cc, SERV_READ_TIMEOUT);
 		cc += ret;
+		t2 = clock();
+		diff = (((float)t2 - (float)t1) / CLOCKS_PER_SEC );
 	}
-	while (ret >= 0 && strstr(buf, "\r\n\r\n") == NULL && cc < HTTP_MAX_HEADERSIZE);
+	while (ret >= 0 && strstr(buf, "\r\n\r\n") == NULL && cc < HTTP_MAX_HEADERSIZE && diff < SERV_READ_TIMEOUT);
+	printf("Time to read the request: %f sec\n", diff);
 
 	if (ret < 0 || cc <= 0)
 	{

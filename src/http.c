@@ -16,6 +16,7 @@
 #include "tinyweb.h"
 #include "http.h"
 #include "time.h"
+#include "error_pages.h"
 
 
 http_method_entry_t http_method_list[] = {
@@ -34,16 +35,16 @@ http_method_entry_t http_method_list[] = {
 
 
 http_status_entry_t http_status_list[] = {
-    { 200, "OK"                              },  // HTTP_STATUS_OK
-    { 206, "Partial Content"                 },  // HTTP_STATUS_PARTIAL_CONTENT
-    { 301, "Moved Permanently"               },  // HTTP_STATUS_MOVED_PERMANENTLY
-    { 304, "Not Modified"                    },  // HTTP_STATUS_NOT_MODIFIED
-    { 400, "Bad Request"                     },  // HTTP_STATUS_BAD_REQUEST
-    { 403, "Forbidden"                       },  // HTTP_STATUS_FORBIDDEN
-    { 404, "Not Found"                       },  // HTTP_STATUS_NOT_FOUND
-    { 416, "Requested Range Not Satisfiable" },  // HTTP_STATUS_RANGE_NOT_SATISFIABLE
-    { 500, "Internal Server Error"           },  // HTTP_STATUS_INTERNAL_SERVER_ERROR
-    { 501, "Not Implemented"                 }   // HTTP_STATUS_NOT_IMPLEMENTED
+    { HTTP_STATUS_OK, 							"OK"                              , ""		},  // HTTP_STATUS_OK
+    { HTTP_STATUS_PARTIAL_CONTENT, 				"Partial Content"                 , ""		},  // HTTP_STATUS_PARTIAL_CONTENT
+    { HTTP_STATUS_MOVED_PERMANENTLY, 			"Moved Permanently"               , HTML_301	},  // HTTP_STATUS_MOVED_PERMANENTLY
+    { HTTP_STATUS_NOT_MODIFIED, 				"Not Modified"                    , ""		},  // HTTP_STATUS_NOT_MODIFIED
+    { HTTP_STATUS_BAD_REQUEST, 					"Bad Request"                     , HTML_400	},  // HTTP_STATUS_BAD_REQUEST
+    { HTTP_STATUS_FORBIDDEN, 					"Forbidden"                       , HTML_403	},  // HTTP_STATUS_FORBIDDEN
+    { HTTP_STATUS_NOT_FOUND, 					"Not Found"                       , HTML_404	},  // HTTP_STATUS_NOT_FOUND
+    { HTTP_STATUS_RANGE_NOT_SATISFIABLE, 		"Requested Range Not Satisfiable" , ""		},  // HTTP_STATUS_RANGE_NOT_SATISFIABLE
+    { HTTP_STATUS_INTERNAL_SERVER_ERROR, 		"Internal Server Error"           , HTML_500	},  // HTTP_STATUS_INTERNAL_SERVER_ERROR
+    { HTTP_STATUS_NOT_IMPLEMENTED,		 		"Not Implemented"                 , HTML_501	}   // HTTP_STATUS_NOT_IMPLEMENTED
 };
 
 
