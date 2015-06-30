@@ -22,41 +22,49 @@
 int
 connect_tcp(const char *host, unsigned short port)
 {
-  struct hostent   *phe;        /* pointer to host information entry	 */
-  struct protoent  *ppe;        /* pointer to protocol information entry */
-  struct sockaddr_in sin;       /* an Internet endpoint address		 */
-  int s;                        /* socket descriptor                     */
-  int retcode;
-
-  memset(&sin, 0, sizeof(sin));
-  sin.sin_family = AF_INET;
-  sin.sin_port = htons(port);
-
-  if ((phe = gethostbyname(host)) != 0) {
-    memcpy(&sin.sin_addr, phe->h_addr, phe->h_length);
-  } else if ( (sin.sin_addr.s_addr = inet_addr(host)) == INADDR_NONE ) {
-    fprintf(stderr, "can't get \"%s\" host entry\n", host);
-    perror("ERROR: client gethostbyname() ");
-    return -1;
-  } /* end if */
+	struct protoent  *ppe;        		/* pointer to protocol information entry */
+	int s = 0;                        	/* socket descriptor                     */
+	int retcode = -1;
+	char sport[15];
+    struct addrinfo hints, *servinfo;
+ 
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_UNSPEC; 		/* use AF_INET6 to force IPv6 */
+    hints.ai_socktype = SOCK_STREAM;
+ 
+	
+	snprintf(sport, 15, "%d", port);
+    if ( (retcode = getaddrinfo( host , sport , &hints , &servinfo)) != 0) 
+    {
+        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(retcode));
+        return 1;
+    }
+    
 
   ppe = getprotobyname("tcp");
   if (ppe == 0) {
     perror("ERROR: client getprotobyname(\"tcp\") ");
-    return -1;
-  } /* end if */
+  }
+  else
+  {
 
-  s = socket(PF_INET, SOCK_STREAM, ppe->p_proto);
-  if (s < 0) {
-    perror("ERROR: client socket() ");
-    return -1;
-  } /* end if */
+	  s = socket(PF_INET6, SOCK_STREAM, ppe->p_proto);
+	  if (s < 0) {
+		perror("ERROR: client socket() ");
+	  }
+	  else
+	  {
+		    retcode = connect(s, servinfo->ai_addr, servinfo->ai_addrlen);
+		    if (retcode < 0) {
+				perror("ERROR: client connect() ");
+		    }
+	  }
+  }
 
-  retcode = connect(s, (struct sockaddr *)&sin, sizeof(sin));
+  freeaddrinfo(servinfo); /* all done with this structure */
+  
   if (retcode < 0) {
-    perror("ERROR: client connect() ");
-    return -1;
-  } /* end if */
-
+	  return -1;
+  }
   return s;
 } /* end of connect_tcp */

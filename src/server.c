@@ -64,19 +64,17 @@ int static server_answer_error(int sd, int error_code)
 {
 	int ret;
 	char* html = "";
-	/*
+
 	//Status Code
 	int http_status_list_index = 0;
-	int http_status_list_size = sizeof(http_status_list)/sizeof(http_status_list[0]);
 
-	for(http_status_list_index = 0; http_status_list_index < http_status_list_size; http_status_list_index++){
+	for(http_status_list_index = 0; http_status_list_index < HTTP_STATUS_LIST_SIZE; http_status_list_index++){
 		if(http_status_list[http_status_list_index].code == error_code)
 		{
 			html = http_status_list[http_status_list_index].html;
 			break;
 		}
 	}
-	 */
 
 	int html_length = (int)strlen(html);
 	char* response = http_create_header(error_code, SERV_NAME, NULL, "text/html", " ", html_length);
@@ -92,12 +90,15 @@ int static server_answer_error(int sd, int error_code)
 		free(response);response = NULL;
 		return -1;
 	}
-	ret = write_to_socket(sd, html, html_length, SERV_WRITE_TIMEOUT);
-	if (ret < 0)
+	if (html_length > 0)
 	{
-		perror("SERVER: failed to send error response!");
-		free(response);response = NULL;
-		return -1;
+		ret = write_to_socket(sd, html, html_length, SERV_WRITE_TIMEOUT);
+		if (ret < 0)
+		{
+			perror("SERVER: failed to send error response!");
+			free(response);response = NULL;
+			return -1;
+		}
 	}
 
 	free(response);response = NULL;
@@ -108,7 +109,11 @@ int static server_answer_error(int sd, int error_code)
 int static server_answer(int sd, char* url)
 {
 	int ret;
-	int html_length = (int)strlen(html_test);
+	char* html = "";
+
+	html = html_test;
+
+	int html_length = (int)strlen(html);
 	char* response = http_create_header(200, SERV_NAME, NULL, "text/html", " ", html_length);
 	if (response == NULL)
 	{
@@ -119,11 +124,25 @@ int static server_answer(int sd, char* url)
 
 	printf("Response:\n");
 	ret = write_to_socket(sd, response, strlen(response), SERV_WRITE_TIMEOUT);
-	ret = write_to_socket(sd, html_test, html_length, SERV_WRITE_TIMEOUT);//TODO check return code!!!
-	printf("ret write %d\n", ret);
+	if (ret < 0)
+	{
+		perror("SERVER: failed to send error response header!");
+		free(response);response = NULL;
+		return -1;
+	}
+	if (html_length > 0)
+	{
+		ret = write_to_socket(sd, html, html_length, SERV_WRITE_TIMEOUT);
+		if (ret < 0)
+		{
+			perror("SERVER: failed to send error response!");
+			free(response);response = NULL;
+			return -1;
+		}
+	}
 
 	printf("%.*s", (int)strlen(response), response);
-	printf("%.*s", (int)strlen(html_test), html_test);
+	printf("%.*s", (int)strlen(html), html);
 
 	free(response);response = NULL;
 
@@ -253,6 +272,7 @@ int server_start(int port)
 	sd = passive_tcp(port, SERV_QLEN);
 	if (sd < 0)
 	{
+		perror("Failed to create socket!\n");
 		//TODO: ERROR
 		
 		//exit(1);//Add Error codes

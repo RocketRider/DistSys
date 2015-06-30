@@ -17,11 +17,11 @@
 
 struct socket_info {
   char name[100];
-  char addr[20];
+  char addr[INET6_ADDRSTRLEN]; /* MAX IPv6 String length: 0000:0000:0000:0000:0000:0000:192.168.0.1\0 = 46 */
   int port;
 };
 
-void get_socket_info(struct sockaddr_in from_sa, struct socket_info *si);
+void get_socket_info(struct sockaddr_in6 from_sa, struct socket_info *si);
 
 int get_socket_name(int fd, struct socket_info *si);
 

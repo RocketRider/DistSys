@@ -34,15 +34,16 @@ http_method_entry_t http_method_list[] = {
 };
 
 
+const int HTTP_STATUS_LIST_SIZE = 10;
 http_status_entry_t http_status_list[] = {
-    { HTTP_STATUS_OK, 							"OK"                              , ""		},  // HTTP_STATUS_OK
-    { HTTP_STATUS_PARTIAL_CONTENT, 				"Partial Content"                 , ""		},  // HTTP_STATUS_PARTIAL_CONTENT
+    { HTTP_STATUS_OK, 							"OK"                              , ""			},  // HTTP_STATUS_OK
+    { HTTP_STATUS_PARTIAL_CONTENT, 				"Partial Content"                 , ""			},  // HTTP_STATUS_PARTIAL_CONTENT
     { HTTP_STATUS_MOVED_PERMANENTLY, 			"Moved Permanently"               , HTML_301	},  // HTTP_STATUS_MOVED_PERMANENTLY
-    { HTTP_STATUS_NOT_MODIFIED, 				"Not Modified"                    , ""		},  // HTTP_STATUS_NOT_MODIFIED
+    { HTTP_STATUS_NOT_MODIFIED, 				"Not Modified"                    , ""			},  // HTTP_STATUS_NOT_MODIFIED
     { HTTP_STATUS_BAD_REQUEST, 					"Bad Request"                     , HTML_400	},  // HTTP_STATUS_BAD_REQUEST
     { HTTP_STATUS_FORBIDDEN, 					"Forbidden"                       , HTML_403	},  // HTTP_STATUS_FORBIDDEN
     { HTTP_STATUS_NOT_FOUND, 					"Not Found"                       , HTML_404	},  // HTTP_STATUS_NOT_FOUND
-    { HTTP_STATUS_RANGE_NOT_SATISFIABLE, 		"Requested Range Not Satisfiable" , ""		},  // HTTP_STATUS_RANGE_NOT_SATISFIABLE
+    { HTTP_STATUS_RANGE_NOT_SATISFIABLE, 		"Requested Range Not Satisfiable" , ""			},  // HTTP_STATUS_RANGE_NOT_SATISFIABLE
     { HTTP_STATUS_INTERNAL_SERVER_ERROR, 		"Internal Server Error"           , HTML_500	},  // HTTP_STATUS_INTERNAL_SERVER_ERROR
     { HTTP_STATUS_NOT_IMPLEMENTED,		 		"Not Implemented"                 , HTML_501	}   // HTTP_STATUS_NOT_IMPLEMENTED
 };

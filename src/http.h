@@ -23,16 +23,16 @@ typedef enum http_method {
 
 
 typedef enum http_status {
-    HTTP_STATUS_OK = 200,                    	 // 200
-    HTTP_STATUS_PARTIAL_CONTENT = 206,           // 206
-    HTTP_STATUS_MOVED_PERMANENTLY = 301,         // 301
-    HTTP_STATUS_NOT_MODIFIED = 304,              // 304
-    HTTP_STATUS_BAD_REQUEST = 400,               // 400
-    HTTP_STATUS_FORBIDDEN = 401,                 // 401
-    HTTP_STATUS_NOT_FOUND = 404,                 // 404
-    HTTP_STATUS_RANGE_NOT_SATISFIABLE = 416,     // 416
-    HTTP_STATUS_INTERNAL_SERVER_ERROR = 500,     // 500
-    HTTP_STATUS_NOT_IMPLEMENTED = 501            // 501
+    HTTP_STATUS_OK					 	= 200,
+    HTTP_STATUS_PARTIAL_CONTENT		 	= 206,
+    HTTP_STATUS_MOVED_PERMANENTLY	 	= 301,
+    HTTP_STATUS_NOT_MODIFIED		 	= 304,
+    HTTP_STATUS_BAD_REQUEST			 	= 400,
+    HTTP_STATUS_FORBIDDEN			 	= 401,
+    HTTP_STATUS_NOT_FOUND				= 404,
+    HTTP_STATUS_RANGE_NOT_SATISFIABLE	= 416,
+    HTTP_STATUS_INTERNAL_SERVER_ERROR 	= 500,
+    HTTP_STATUS_NOT_IMPLEMENTED 		= 501
 } http_status_t;
 
 
@@ -51,6 +51,7 @@ typedef struct http_status_entry {
 
 extern http_method_entry_t http_method_list[];
 extern http_status_entry_t http_status_list[];
+extern const int HTTP_STATUS_LIST_SIZE;
 extern char* http_create_header(int status_code, char* server, time_t* last_modified, char* content_type, char* location, int html_length);
 
 #endif

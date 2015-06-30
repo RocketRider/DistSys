@@ -21,7 +21,7 @@
 
 #include "socket_io.h"
 
-//maxtime in seconds
+
 int
 select_socket_fd (int fd, int maxtime, int writep)
 {
@@ -61,7 +61,6 @@ read_from_socket (int fd, char *buf, int len, int timeout)
 } /* end of read_from_socket */
 
 
-//timeout in seconds
 int
 write_to_socket (int fd, char *buf, int len, int timeout)
 {

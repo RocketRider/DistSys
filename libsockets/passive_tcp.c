@@ -23,22 +23,36 @@
 unsigned short
 get_port_from_name(const char *service)
 {
-  struct servent  *pse;      /* pointer to service information entry */
-  unsigned short port;
-
-  /*
+   /*
    * Map service name to port number
    */
-  pse = getservbyname(service, "tcp");
-  if (pse != 0) {
-    port = ntohs((unsigned short)pse->s_port);
-  } else {
-    port = (unsigned short)atoi(service);
-  } /* end if */
-
-  if (port == 0) {
-    fprintf(stderr, "ERROR: cannot get '%s' serivce entry\n", service);
-  } /* end if */
+  
+    unsigned short port = 0;
+    int retcode;
+    struct addrinfo hints, *servinfo;
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_UNSPEC; /* use AF_INET6 to force IPv6 */
+    hints.ai_socktype = SOCK_STREAM;
+    if ( (retcode = getaddrinfo( NULL , service , &hints , &servinfo)) != 0) 
+    {
+        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(retcode));
+        return 1;
+    }
+    if (servinfo != NULL)
+    {
+		if (servinfo->ai_family == AF_INET) {
+			port = ntohs(((struct sockaddr_in*)(servinfo->ai_addr))->sin_port);
+		}
+		else
+		{
+			port = ntohs(((struct sockaddr_in6*)(servinfo->ai_addr))->sin6_port);
+		}
+		freeaddrinfo(servinfo); /* all done with this structure */
+    }
+  
+    if (port == 0) {
+      fprintf(stderr, "ERROR: cannot get '%s' serivce entry\n", service);
+    } /* end if */
 
   return port;
 } /* end of get_port_from_name */
@@ -50,14 +64,14 @@ passive_tcp(unsigned short port, int qlen)
   int retcode;
   int sd;                    /* socket descriptor */
   struct protoent *ppe;      /* pointer to protocol information entry */
-  struct sockaddr_in server;
+  struct sockaddr_in6 server;
   const int on = 1;          /* used to set socket option */
 
 
   memset(&server, 0, sizeof(server));
-  server.sin_family = AF_INET;
-  server.sin_addr.s_addr = INADDR_ANY;
-  server.sin_port = htons(port);
+  server.sin6_family = AF_INET6;
+  server.sin6_addr = in6addr_any;
+  server.sin6_port = htons(port);
 
   /*
    * Get protocol information entry.
@@ -71,7 +85,7 @@ passive_tcp(unsigned short port, int qlen)
   /*
    * Create a socket.
    */
-  sd = socket(PF_INET, SOCK_STREAM, ppe->p_proto);
+  sd = socket(PF_INET6, SOCK_STREAM, ppe->p_proto);
   if (sd < 0) {
     perror("ERROR: server socket()");
     return -1;

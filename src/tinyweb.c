@@ -110,10 +110,10 @@ get_options(int argc, char *argv[], prog_options_t *opt)
     opt->log_filename = NULL;
     opt->root_dir     = NULL;
     opt->server_addr  = NULL;
+    opt->log_fd 	  = NULL;
     opt->verbose      =    0;
     opt->timeout      =  120;
-    opt->log_fd 	  = NULL;
-    opt->server_addr  = NULL;
+
 
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_socktype = SOCK_STREAM;

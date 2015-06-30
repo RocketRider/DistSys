@@ -20,26 +20,23 @@
 #include "socket_info.h"
 
 void
-get_socket_info(struct sockaddr_in from_sa, struct socket_info *si)
+get_socket_info(struct sockaddr_in6 from_sa, struct socket_info *si)
 {
   struct hostent *from_he;
 
-  from_he = gethostbyaddr((char *)&from_sa.sin_addr,
-			  sizeof(from_sa.sin_addr),
-			  AF_INET);
+  from_he = gethostbyaddr((char *)&from_sa.sin6_addr, sizeof(from_sa.sin6_addr), AF_INET6);
 
-  strncpy(si->name,
-	  (from_he) ? from_he->h_name : inet_ntoa(from_sa.sin_addr),
-	  sizeof(si->name));
-  strncpy(si->addr, inet_ntoa(from_sa.sin_addr), sizeof(si->addr));
-  si->port = ntohs(from_sa.sin_port);
+  inet_ntop(from_sa.sin6_family, &from_sa.sin6_addr, si->addr, INET6_ADDRSTRLEN);
+  strncpy(si->name,(from_he) ? from_he->h_name : si->addr,sizeof(si->name));
+
+  si->port = ntohs(from_sa.sin6_port);
 } /* end of get_socket_info */
 
 
 int
 get_socket_name(int fd, struct socket_info *si)
 {
-  struct sockaddr_in sin;
+  struct sockaddr_in6 sin;
   socklen_t sin_len;
   int retcode;
 
@@ -56,7 +53,7 @@ get_socket_name(int fd, struct socket_info *si)
 int
 get_socket_peer(int fd, struct socket_info *si)
 {
-  struct sockaddr_in sin;
+  struct sockaddr_in6 sin;
   socklen_t sin_len;
   int retcode;
 
