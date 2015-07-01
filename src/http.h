@@ -49,10 +49,21 @@ typedef struct http_status_entry {
 } http_status_entry_t;
 
 
+typedef struct http_header {
+	http_method_t   method;
+    char            *url;
+    int				range_begin;
+    int				range_end;
+
+} http_header_t;
+
+
+
 extern http_method_entry_t http_method_list[];
 extern http_status_entry_t http_status_list[];
 extern const int HTTP_STATUS_LIST_SIZE;
 extern char* http_create_header(int status_code, char* server, time_t* last_modified, char* content_type, char* location, int html_length);
+extern http_header_t http_parse_header(char * header);
 
 #endif
 

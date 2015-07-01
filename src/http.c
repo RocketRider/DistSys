@@ -19,6 +19,7 @@
 #include "error_pages.h"
 
 
+const int HTTP_METHOD_LIST_SIZE = 11;
 http_method_entry_t http_method_list[] = {
     { "GET",         HTTP_METHOD_GET             },
     { "HEAD",        HTTP_METHOD_HEAD            },
@@ -118,6 +119,28 @@ char* http_create_header(int status_code, char* server, time_t* last_modified, c
 }
 
 
+http_header_t http_parse_header(char * header)
+{
+	http_header_t header_struct;
+	header_struct.range_begin = 0;
+	header_struct.range_end = 0;
+	header_struct.method = HTTP_METHOD_UNKNOWN;
+
+	for (int i = 0; i < HTTP_METHOD_LIST_SIZE-1 ; i++)
+	{
+		if (memcmp(header, http_method_list[i].name, strlen(http_method_list[i].name) * sizeof(char)) == 0)
+		{
+			header_struct.method = http_method_list[i].method;
+			break;
+		}
+	}
+
+
+
+
+
+	return header_struct;
+}
 
 
 

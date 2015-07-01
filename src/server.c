@@ -67,7 +67,6 @@ int static server_answer_error(int sd, int error_code)
 
 	//Status Code
 	int http_status_list_index = 0;
-
 	for(http_status_list_index = 0; http_status_list_index < HTTP_STATUS_LIST_SIZE; http_status_list_index++){
 		if(http_status_list[http_status_list_index].code == error_code)
 		{
@@ -106,12 +105,29 @@ int static server_answer_error(int sd, int error_code)
 }
 
 
-int static server_answer(int sd, char* url)
+int static server_answer(int sd, http_header_t request)
 {
 	int ret;
 	char* html = "";
 
+	if (request.method == HTTP_METHOD_NOT_IMPLEMENTED || request.method == HTTP_METHOD_UNKNOWN)
+	{
+		perror("SERVER: http method is not supported!");
+		server_answer_error(sd, HTTP_STATUS_NOT_IMPLEMENTED);
+		return -1;
+	}
 	html = html_test;
+
+
+    //struct stat sb;
+
+    //if (stat("web/"+url, &sb) == -1) {
+    //   perror("stat failed!");
+    //    return -1;
+    // }
+
+
+
 
 	int html_length = (int)strlen(html);
 	char* response = http_create_header(200, SERV_NAME, NULL, "text/html", " ", html_length);
@@ -184,7 +200,8 @@ int server_handle_client(int sd)
 		printf("Request: \n%.*s\n", cc, buf);
 		
 		//TODO Parse HTTP Header
-		ret = server_answer(sd, "");
+		http_header_t request = http_parse_header(buf);
+		ret = server_answer(sd, request);
 	}
 	
 	close(sd);
