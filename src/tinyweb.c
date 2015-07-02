@@ -270,7 +270,7 @@ main(int argc, char *argv[])
     if (sd > 0 )
     {
 		while(server_running && ret == 0) {
-			ret = server_accept_clients(sd);
+			ret = server_accept_clients(sd, my_opt.root_dir);
 		}
 	}
     

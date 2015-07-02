@@ -26,6 +26,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <signal.h>
+#include <sys/stat.h>
 #include "time.h"
 #include "http.h"
 
@@ -105,7 +106,7 @@ int static server_answer_error(int sd, int error_code)
 }
 
 
-int static server_answer(int sd, http_header_t request)
+int static server_answer(int sd, http_header_t request, char* root_dir)
 {
 	int ret;
 	char* html = "";
@@ -119,15 +120,34 @@ int static server_answer(int sd, http_header_t request)
 	html = html_test;
 
 
-    //struct stat sb;
+	struct stat sb;
+	char* filename = malloc(strlen(root_dir)*sizeof(char) + strlen(request.url)*sizeof(char) + sizeof(char));
+	memcpy(filename, root_dir, strlen(root_dir)*sizeof(char) + sizeof(char));
+	strcat(filename, request.url);
+	printf("Check file '%s'\n", filename);
+    if (stat(filename, &sb) == -1) {
+       int err = errno;
+       if (err == EACCES)
+       {
+    	   server_answer_error(sd, HTTP_STATUS_FORBIDDEN);
+       }
+       else
+       {
+    	   server_answer_error(sd, HTTP_STATUS_NOT_FOUND);
+       }
+       free(filename);
+       return -1;
+     }
+    if (S_ISDIR(sb.st_mode))
+    {
+    	//TODO: send new url...
+    	server_answer_error(sd, HTTP_STATUS_MOVED_PERMANENTLY);
+        free(filename);
+        return -1;
+    }
 
-    //if (stat("web/"+url, &sb) == -1) {
-    //   perror("stat failed!");
-    //    return -1;
-    // }
 
-
-
+    free(filename);
 
 	int html_length = (int)strlen(html);
 	char* response = http_create_header(200, SERV_NAME, NULL, "text/html", " ", html_length);
@@ -146,7 +166,7 @@ int static server_answer(int sd, http_header_t request)
 		free(response);response = NULL;
 		return -1;
 	}
-	if (html_length > 0)
+	if (html_length > 0 && request.method != HTTP_METHOD_HEAD)
 	{
 		ret = write_to_socket(sd, html, html_length, SERV_WRITE_TIMEOUT);
 		if (ret < 0)
@@ -166,7 +186,7 @@ int static server_answer(int sd, http_header_t request)
 }
 
 
-int server_handle_client(int sd)
+int server_handle_client(int sd, char* root_dir)
 {
 	char buf[HTTP_MAX_HEADERSIZE] = "";
 	int cc = 0; //charachter count
@@ -201,7 +221,8 @@ int server_handle_client(int sd)
 		
 		//TODO Parse HTTP Header
 		http_header_t request = http_parse_header(buf);
-		ret = server_answer(sd, request);
+		ret = server_answer(sd, request, root_dir);
+		free(request.url);
 	}
 	
 	close(sd);
@@ -209,7 +230,7 @@ int server_handle_client(int sd)
 }
 
 
-int server_accept_clients(int sd)
+int server_accept_clients(int sd, char* root_dir)
 {
 	int retcode = 0, newsd; //new socket descriptor
 	struct sockaddr_in from_client;
@@ -243,7 +264,7 @@ int server_accept_clients(int sd)
 
 				//printf("child process: [%i]\n",getpid());			
 
-				server_handle_client(newsd);
+				server_handle_client(newsd, root_dir);
 				retcode = 1;
 				//free(processStartTimeBuffer);
 				//exit(0);

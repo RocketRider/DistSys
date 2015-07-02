@@ -50,6 +50,35 @@ http_status_entry_t http_status_list[] = {
 };
 
 
+
+//Source: http://rosettacode.org/wiki/URL_decoding#C
+inline int ishex(int x)
+{
+	return	(x >= '0' && x <= '9')	||
+		(x >= 'a' && x <= 'f')	||
+		(x >= 'A' && x <= 'F');
+}
+
+int http_decode_url(const char *s, char *dec)
+{
+	char *o;
+	const char *end = s + strlen(s);
+	unsigned int c; //Edit of original code!
+	for (o = dec; s <= end; o++) {
+		c = *s++;
+		if (c == '+') c = ' ';
+		else if (c == '%' && (	!ishex(*s++)	||
+					!ishex(*s++)	||
+					!sscanf(s - 2, "%2x", &c)))
+			return -1;
+
+		if (dec) *o = c;
+	}
+	return o - dec;
+}
+
+
+
 char* http_create_header(int status_code, char* server, time_t* last_modified, char* content_type, char* location, int html_length)
 {
 	char* response = malloc(HTTP_MAX_HEADERSIZE);
@@ -105,6 +134,7 @@ char* http_create_header(int status_code, char* server, time_t* last_modified, c
 	sprintf(response + strlen(response), "Content-Type: %s\n", content_type);
 
 	//Location
+	//TODO evtl. encode url?
 	if (strlen(location)>(HTTP_MAX_HEADERSIZE - strlen(response) - 11 - 20 - 1))
 	{
 		perror("HTTP_HEADER: Location is to long for the defined header size!");
@@ -126,6 +156,7 @@ http_header_t http_parse_header(char * header)
 	header_struct.range_end = 0;
 	header_struct.method = HTTP_METHOD_UNKNOWN;
 
+	//Read HTTP method
 	for (int i = 0; i < HTTP_METHOD_LIST_SIZE-1 ; i++)
 	{
 		if (memcmp(header, http_method_list[i].name, strlen(http_method_list[i].name) * sizeof(char)) == 0)
@@ -135,8 +166,15 @@ http_header_t http_parse_header(char * header)
 		}
 	}
 
-
-
+	//Read URL
+	char* url = strstr(header," ") + sizeof(char);
+	char* url_end = strstr(url," ");
+	size_t url_size = url_end - url;
+	header_struct.url = malloc(url_size + sizeof(char));
+	memset(header_struct.url, 0, url_size + sizeof(char));//Set Null byte at the end of the string
+	memcpy(header_struct.url, url, url_size);
+	http_decode_url(header_struct.url, header_struct.url);
+	printf("HEADER_URL: '%s'\n", header_struct.url);
 
 
 	return header_struct;

@@ -15,7 +15,7 @@
 	#define SERV_READ_TIMEOUT			5 			//timeout for 'select()' in seconds
 	#define SERV_NAME					"Tinyweb"
 	
-	extern int server_accept_clients(int sd);
+	extern int server_accept_clients(int sd, char* root_dir);
 	extern int server_start(int port);
 
 #endif
