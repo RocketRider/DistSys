@@ -38,28 +38,6 @@
 
 
 
-char *html_test=
-"<!DOCTYPE html PUBLIC '-//IETF//DTD HTML 2.0//EN'>\n"
-"<HTML>\n"
-"   <HEAD>\n"
-"      <TITLE>\n"
-"         A Small Hello\n"
-"      </TITLE>\n"
-"   </HEAD>\n"
-"<BODY>\n"
-"   <H1>Hi</H1>\n"
-"   <P>This is very minimal 'hello world' HTML document.</P>\n"
-"   <P>Time: Sun, 22 Aug 2004 19:07:45 GMT</P>\n"
-"</BODY>\n"
-"</HTML>\n"
-"\r\n"
-"\r\n";
-
-
-
-
-
-
 
 int static server_answer_error(int sd, int error_code)
 {
@@ -109,7 +87,6 @@ int static server_answer_error(int sd, int error_code)
 int static server_answer(int sd, http_header_t request, char* root_dir)
 {
 	int ret;
-	char* html = "";
 
 	if (request.method == HTTP_METHOD_NOT_IMPLEMENTED || request.method == HTTP_METHOD_UNKNOWN)
 	{
@@ -117,7 +94,6 @@ int static server_answer(int sd, http_header_t request, char* root_dir)
 		server_answer_error(sd, HTTP_STATUS_NOT_IMPLEMENTED);
 		return -1;
 	}
-	html = html_test;
 
 
 	struct stat sb;
@@ -135,26 +111,27 @@ int static server_answer(int sd, http_header_t request, char* root_dir)
        {
     	   server_answer_error(sd, HTTP_STATUS_NOT_FOUND);
        }
-       free(filename);
+       free(filename);filename = NULL;
        return -1;
      }
     if (S_ISDIR(sb.st_mode))
     {
     	//TODO: send new url...
     	server_answer_error(sd, HTTP_STATUS_MOVED_PERMANENTLY);
-        free(filename);
+        free(filename);filename = NULL;
         return -1;
     }
+    int html_length = (int)sb.st_size;
+    time_t mod_date = (time_t)sb.st_mtim.tv_sec;
 
 
-    free(filename);
-
-	int html_length = (int)strlen(html);
-	char* response = http_create_header(200, SERV_NAME, NULL, "text/html", " ", html_length);
+	//int html_length = (int)strlen(html);
+	char* response = http_create_header(200, SERV_NAME, &mod_date, "text/html", " ", html_length);
 	if (response == NULL)
 	{
 		perror("SERVER: create response header failed!");
 		server_answer_error(sd, HTTP_STATUS_INTERNAL_SERVER_ERROR);
+		free(filename);filename = NULL;
 		return -1;
 	}
 
@@ -164,23 +141,60 @@ int static server_answer(int sd, http_header_t request, char* root_dir)
 	{
 		perror("SERVER: failed to send error response header!");
 		free(response);response = NULL;
+		free(filename);filename = NULL;
 		return -1;
 	}
 	if (html_length > 0 && request.method != HTTP_METHOD_HEAD)
 	{
-		ret = write_to_socket(sd, html, html_length, SERV_WRITE_TIMEOUT);
+		   FILE *fp = fopen(filename, "r"); //open in read mode
+
+		   if( fp == NULL )
+		   {
+		      perror("SERVER: Error while opening the file.\n");
+		      server_answer_error(sd, HTTP_STATUS_NOT_FOUND);
+				free(response);response = NULL;
+				free(filename);filename = NULL;
+				return -1;
+		   }
+
+		   char* buffer = (char*) malloc (html_length);
+		   if (buffer == NULL)
+		   {
+				perror("SERVER: can't allocate memory!");
+				server_answer_error(sd, HTTP_STATUS_INTERNAL_SERVER_ERROR);
+				free(response);response = NULL;
+				free(filename);filename = NULL;
+				return -1;
+		   }
+
+		    // copy the file into the buffer:
+		    int result = fread (buffer, 1, html_length, fp);
+		    if (result != html_length) {
+				perror("SERVER: create response header failed!");
+				server_answer_error(sd, HTTP_STATUS_INTERNAL_SERVER_ERROR);
+				free(response);response = NULL;
+				free(filename);filename = NULL;
+				return -1;
+		    }
+		   fclose(fp);
+
+
+		ret = write_to_socket(sd, buffer, html_length, SERV_WRITE_TIMEOUT);
 		if (ret < 0)
 		{
 			perror("SERVER: failed to send error response!");
 			free(response);response = NULL;
+			free(filename);filename = NULL;
 			return -1;
 		}
+		free(buffer);
 	}
 
-	printf("%.*s", (int)strlen(response), response);
-	printf("%.*s", (int)strlen(html), html);
+	//printf("%.*s", (int)strlen(response), response);
+	//printf("%.*s", (int)strlen(html), html);
 
 	free(response);response = NULL;
+	free(filename);filename = NULL;
 
 	return 0;
 }
