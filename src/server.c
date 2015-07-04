@@ -29,11 +29,16 @@
 #include <sys/stat.h>
 #include "time.h"
 #include "http.h"
+#include "content.h"
+
 
 #include "../libsockets/connect_tcp.h"
 #include "../libsockets/passive_tcp.h"
 #include "../libsockets/socket_io.h"
 #include "../libsockets/socket_info.h"
+
+
+
 
 int static server_answer_error(int sd, int error_code) {
 	int ret;
@@ -79,9 +84,11 @@ int static server_answer_error(int sd, int error_code) {
 	return 0;
 }
 
+
 int static server_answer(int sd, http_header_t request, char* root_dir) {
 	int ret;
 
+	//Check http method
 	if (request.method == HTTP_METHOD_NOT_IMPLEMENTED
 			|| request.method == HTTP_METHOD_UNKNOWN) {
 		perror("SERVER: http method is not supported!");
@@ -89,6 +96,8 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 		return -1;
 	}
 
+
+	//Check file
 	struct stat sb;
 	char* filename = malloc(
 			strlen(root_dir) * sizeof(char) + strlen(request.url) * sizeof(char)
@@ -117,9 +126,12 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 	int html_length = (int) sb.st_size;
 	time_t mod_date = (time_t) sb.st_mtim.tv_sec;
 
-	//int html_length = (int)strlen(html);
-	char* response = http_create_header(200, SERV_NAME, &mod_date, "text/html",
-			" ", html_length);
+	//Get mime type
+	char* file_type = get_http_content_type_str(get_http_content_type(filename));
+
+
+	//Create header
+	char* response = http_create_header(200, SERV_NAME, &mod_date, file_type, " ", html_length);
 	if (response == NULL) {
 		perror("SERVER: create response header failed!");
 		server_answer_error(sd, HTTP_STATUS_INTERNAL_SERVER_ERROR);
@@ -128,10 +140,8 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 		return -1;
 	}
 
-	//printf("Response:\n");
-
+	//Open file
 	FILE *fp = fopen(filename, "r"); //open in read mode
-
 	if (fp == NULL) {
 		perror("SERVER: Error while opening file.\n");
 		server_answer_error(sd, HTTP_STATUS_FORBIDDEN);
@@ -142,7 +152,8 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 		return -1;
 	}
 
-	char* buffer = (char*) malloc(html_length);
+	//Allocate send data buffer
+	char* buffer = (char*) malloc(SERV_SEND_BUFFER_SIZE);
 	if (buffer == NULL) {
 		perror("SERVER: can't allocate memory!");
 		server_answer_error(sd, HTTP_STATUS_INTERNAL_SERVER_ERROR);
@@ -154,20 +165,7 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 		return -1;
 	}
 
-	//copy the file into the buffer:
-	int result = fread(buffer, 1, html_length, fp);
-	if (result != html_length) {
-		perror("SERVER: create response header failed!");
-		server_answer_error(sd, HTTP_STATUS_INTERNAL_SERVER_ERROR);
-		free(response);
-		response = NULL;
-		free(filename);
-		filename = NULL;
-		fclose(fp);
-		return -1;
-	}
-	fclose(fp);
-
+	//Send response header:
 	ret = write_to_socket(sd, response, strlen(response), SERV_WRITE_TIMEOUT);
 	if (ret < 0) {
 		perror("SERVER: failed to send error response header!");
@@ -175,25 +173,40 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 		response = NULL;
 		free(filename);
 		filename = NULL;
+		free(buffer);
+		buffer = NULL;
 		return -1;
 	}
 
+
+	//Send response body
+	int read_bytes = 0;
 	if (html_length > 0 && request.method != HTTP_METHOD_HEAD) {
-		ret = write_to_socket(sd, buffer, html_length, SERV_WRITE_TIMEOUT);
-		if (ret < 0) {
-			perror("SERVER: failed to send error response!");
-			free(response);
-			response = NULL;
-			free(filename);
-			filename = NULL;
-			return -1;
+		do{
+
+			read_bytes = fread(buffer, 1, SERV_SEND_BUFFER_SIZE, fp);
+			if (read_bytes > 0)
+			{
+				ret = write_to_socket(sd, buffer, read_bytes, SERV_WRITE_TIMEOUT);
+				if (ret < 0) {
+					perror("SERVER: failed to send error response!");
+					free(response);
+					response = NULL;
+					free(filename);
+					filename = NULL;
+					free(buffer);
+					buffer = NULL;
+					return -1;
+				}
+			}
 		}
+		while (read_bytes == SERV_SEND_BUFFER_SIZE);
 	}
+
+	//Free used resources
+	fclose(fp);
 	free(buffer);
-
-	//printf("%.*s", (int)strlen(response), response);
-	//printf("%.*s", (int)strlen(html), html);
-
+	buffer = NULL;
 	free(response);
 	response = NULL;
 	free(filename);
@@ -202,15 +215,15 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 	return 0;
 }
 
+
+
 int server_handle_client(int sd, char* root_dir) {
 	char buf[HTTP_MAX_HEADERSIZE] = "";
 	int cc = 0; //charachter count
 	struct socket_info info;
 	int ret;
 
-	printf("New Clinet...\n");
 	get_socket_name(sd, &info);
-	printf("IP: %s, Port: %d\n\n", info.addr, info.port);
 
 	clock_t t1, t2; //Make sure the max timeout is not more then 2x SERV_READ_TIMEOUT
 	float diff;
@@ -218,20 +231,21 @@ int server_handle_client(int sd, char* root_dir) {
 	do {
 		ret = read_from_socket(sd, buf + cc, HTTP_MAX_HEADERSIZE - cc,
 				SERV_READ_TIMEOUT);
-		cc += ret;
+		if (ret > 0)
+		{
+			cc += ret;
+		}
 		t2 = clock();
 		diff = (((float) t2 - (float) t1) / CLOCKS_PER_SEC);
 	} while (ret >= 0 && strstr(buf, "\r\n\r\n") == NULL
 			&& cc < HTTP_MAX_HEADERSIZE && diff < SERV_READ_TIMEOUT);
-	printf("Time to read the request: %f sec\n", diff);
+
 
 	if (ret < 0 || cc <= 0) {
 		perror("SERVER: receiving request failed!");
 		server_answer_error(sd, HTTP_STATUS_BAD_REQUEST);
 	} else {
 		printf("Request: \n%.*s\n", cc, buf);
-
-		//TODO Parse HTTP Header
 		http_header_t request = http_parse_header(buf);
 		ret = server_answer(sd, request, root_dir);
 		free(request.url);
@@ -240,6 +254,8 @@ int server_handle_client(int sd, char* root_dir) {
 	close(sd);
 	return sd;
 }
+
+
 
 int server_accept_clients(int sd, char* root_dir) {
 	int retcode = 0, newsd; //new socket descriptor
@@ -275,6 +291,8 @@ int server_accept_clients(int sd, char* root_dir) {
 
 	return retcode;
 }
+
+
 
 int server_start(int port) {
 	int sd;

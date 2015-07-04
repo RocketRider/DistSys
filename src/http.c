@@ -58,7 +58,6 @@ inline int ishex(int x)
 		(x >= 'a' && x <= 'f')	||
 		(x >= 'A' && x <= 'F');
 }
-
 int http_decode_url(const char *s, char *dec)
 {
 	char *o;

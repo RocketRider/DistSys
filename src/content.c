@@ -9,6 +9,7 @@
 
 #include <string.h>
 #include "content.h"
+#include <stdio.h>
 
 
 static http_content_type_entry_t http_content_type_list[] = {
