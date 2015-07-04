@@ -22,6 +22,8 @@ my @tests = (
     [ { method => 'HEAD', url => "/index.html", status => 200 } ],
     [ { method => 'HEAD', url => "/images/computerhead1.gif", status => 200 } ],
     [ { method => 'GET',  url => "/images/computerhead1.gif", status => 200 } ],
+    [ { method => 'HEAD', url => "/images/computerhead1.html.gif", status => 200 } ],
+    [ { method => 'GET',  url => "/images/computerhead1.html.gif", status => 200 } ],
     [ { method => 'HEAD', url => "/example.pdf", status => 200 } ],
     [ { method => 'GET',  url => "/example.pdf", status => 200 } ],
     [ { method => 'HEAD', url => "/css/default.css", status => 200 } ],

@@ -29,6 +29,14 @@ get_http_content_type(const char *filename)
 {
     int i;
 
+    //To find last dot in the filename to make sure filenames like test.gif.html work as well!
+    char* pch=strchr(filename,'.');
+    while (pch!=NULL)
+    {
+      filename = pch;
+      pch=strchr(filename+1,'.');
+    }
+
     i = 0;
     while (http_content_type_list[i].ext != NULL) {
         if (strstr(filename, http_content_type_list[i].ext)) {

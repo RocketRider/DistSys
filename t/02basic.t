@@ -29,6 +29,8 @@ setlocale(LC_TIME, $locale_str) or die "Cannot set LC_TIME to '$locale_str'";
 my @tests = (
     [ { method => 'GET',  url => "/index.html", status => 200 } ],
     [ { method => 'HEAD', url => "/index.html", status => 200 } ],
+    [ { method => 'GET',  url => "/index copy.html", status => 200 } ],
+    [ { method => 'HEAD', url => "/index copy.html", status => 200 } ],
     [ { method => 'HEAD', url => "/images/computerhead1.gif", status => 200 } ],
     [ { method => 'GET',  url => "/images/computerhead1.gif", status => 200 } ],
     [ { method => 'HEAD', url => "/example.pdf", status => 200 } ],
