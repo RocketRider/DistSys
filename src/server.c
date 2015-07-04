@@ -40,7 +40,7 @@
 
 
 
-int static server_answer_error(int sd, int error_code) {
+int static server_answer_error_ex(int sd, int error_code, char* location) {
 	int ret;
 	char* html = "";
 
@@ -57,7 +57,7 @@ int static server_answer_error(int sd, int error_code) {
 
 	int html_length = (int) strlen(html);
 	char* response = http_create_header(error_code, SERV_NAME, NULL,
-			"text/html", " ", html_length);
+			"text/html", location, html_length);
 	if (response == NULL) {
 		perror("SERVER: create error response header failed!");
 		return -1;
@@ -83,6 +83,10 @@ int static server_answer_error(int sd, int error_code) {
 	response = NULL;
 	return 0;
 }
+int static server_answer_error(int sd, int error_code)
+{
+	return server_answer_error_ex(sd, error_code, " ");
+}
 
 
 int static server_answer(int sd, http_header_t request, char* root_dir) {
@@ -102,6 +106,13 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 	char* filename = malloc(
 			strlen(root_dir) * sizeof(char) + strlen(request.url) * sizeof(char)
 					+ sizeof(char));
+	if (filename == NULL)
+	{
+		perror("SERVER: Allocate memory failed.\n");
+		server_answer_error(sd, HTTP_STATUS_INTERNAL_SERVER_ERROR);
+		return -1;
+	}
+
 	memcpy(filename, root_dir, strlen(root_dir) * sizeof(char) + sizeof(char));
 	strcat(filename, request.url);
 	printf("Check file '%s'\n", filename);
@@ -117,8 +128,21 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 		return -1;
 	}
 	if (S_ISDIR(sb.st_mode)) {
-		//TODO: send new url...
-		server_answer_error(sd, HTTP_STATUS_MOVED_PERMANENTLY);
+		//TODO: Add server url (localhost:8080)
+		char* newlocation = malloc(strlen(request.url) * sizeof(char) + 12 * sizeof(char));
+		if (newlocation != NULL)
+		{
+			memcpy(newlocation, request.url, strlen(request.url) * sizeof(char) + sizeof(char));
+			strcat(newlocation, "/index.html");
+			server_answer_error_ex(sd, HTTP_STATUS_MOVED_PERMANENTLY, newlocation);
+			free(newlocation);
+			newlocation = NULL;
+		}
+		else
+		{
+			perror("SERVER: Allocate memory failed.\n");
+			server_answer_error(sd, HTTP_STATUS_INTERNAL_SERVER_ERROR);
+		}
 		free(filename);
 		filename = NULL;
 		return -1;
@@ -219,7 +243,7 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 
 int server_handle_client(int sd, char* root_dir) {
 	char buf[HTTP_MAX_HEADERSIZE] = "";
-	int cc = 0; //charachter count
+	int cc = 0; //char count
 	struct socket_info info;
 	int ret;
 
