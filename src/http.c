@@ -63,16 +63,22 @@ int http_decode_url(const char *s, char *dec)
 	char *o;
 	const char *end = s + strlen(s);
 	unsigned int c; //Edit of original code!
-	for (o = dec; s <= end; o++) {
+	for (o = dec; s <= end; o++)
+	{
 		c = *s++;
-		if (c == '+') c = ' ';
-		else if (c == '%' && (	!ishex(*s++)	||
-					!ishex(*s++)	||
-					!sscanf(s - 2, "%2x", &c)))
+		if (c == '+')
+		{
+			c = ' ';
+		}
+		else if (c == '%' && (	!ishex(*s++)	|| !ishex(*s++)	|| !sscanf(s - 2, "%2x", &c)))
+		{
 			return -1;
+		}
 
 		if (dec) *o = c;
 	}
+
+
 	return o - dec;
 }
 
@@ -154,26 +160,65 @@ http_header_t http_parse_header(char * header)
 	header_struct.range_begin = 0;
 	header_struct.range_end = 0;
 	header_struct.method = HTTP_METHOD_UNKNOWN;
+	header_struct.url = NULL;
+	header_struct.host = NULL;
 
 	//Read HTTP method
 	for (int i = 0; i < HTTP_METHOD_LIST_SIZE-1 ; i++)
 	{
-		if (memcmp(header, http_method_list[i].name, strlen(http_method_list[i].name) * sizeof(char)) == 0)
+		if (memcmp(header, http_method_list[i].name, strlen(http_method_list[i].name)) == 0)
 		{
 			header_struct.method = http_method_list[i].method;
 			break;
 		}
 	}
 
+
+	//Read Host
+	char* host = strstr(header,"Host: ");
+	size_t host_size = 0;
+	if (host != NULL)
+	{
+		host += 6;
+		char* host_end = strstr(host,"\r\n");
+		host_size = host_end - host;
+		header_struct.host = calloc(host_size + 1, 1);//Set Null byte at the end of the string
+		if (header_struct.host != NULL)
+		{
+			//memset(header_struct.host, 0, host_size + 1);
+			memcpy(header_struct.host, host, host_size);
+		}
+
+	}
+
+
+
 	//Read URL
-	char* url = strstr(header," ") + sizeof(char);
+	char* url = strstr(header," ") + 1;
 	char* url_end = strstr(url," ");
 	size_t url_size = url_end - url;
-	header_struct.url = malloc(url_size + sizeof(char));
-	memset(header_struct.url, 0, url_size + sizeof(char));//Set Null byte at the end of the string
-	memcpy(header_struct.url, url, url_size);
-	http_decode_url(header_struct.url, header_struct.url);
-	printf("HEADER_URL: '%s'\n", header_struct.url);
+	header_struct.url = calloc(url_size + 1, 1);//Set Null byte at the end of the string
+	if (header_struct.url != NULL)
+	{
+		memcpy(header_struct.url, url, url_size);
+		http_decode_url(header_struct.url, header_struct.url);
+		url_size = strlen(header_struct.url);
+
+		//If is absolute path, remove host part
+		if (header_struct.host != NULL && url_size >= host_size)
+		{
+			if (memcmp(header_struct.url, header_struct.host, host_size) == 0)
+			{
+				memmove(header_struct.url, header_struct.url + host_size, url_size - host_size + 1);
+			}
+		}
+
+		printf("HEADER_URL: '%s'\n", header_struct.url);
+	}
+	else
+	{
+		perror("HTTP_HEADER: Can't allocate memory!");
+	}
 
 
 	return header_struct;

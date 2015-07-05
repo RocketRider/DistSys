@@ -268,13 +268,9 @@ main(int argc, char *argv[])
     install_signal_handlers();
     init_logging_semaphore();
 
-    // TODO: start the server and handle clients...
-    // here, as an example, show how to interact with the
-    // condition set by the signal handler above
+    // start the server and handle clients...
     printf("[%d] Starting server '%s on port %d'...\n", getpid(), my_opt.progname, my_opt.server_port);
     server_running = true;
-    
-
     sd = server_start(my_opt.server_port);
     if (sd > 0 )
     {

@@ -104,8 +104,8 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 	//Check file
 	struct stat sb;
 	char* filename = malloc(
-			strlen(root_dir) * sizeof(char) + strlen(request.url) * sizeof(char)
-					+ sizeof(char));
+			strlen(root_dir) + strlen(request.url)
+					+ 1);
 	if (filename == NULL)
 	{
 		perror("SERVER: Allocate memory failed.\n");
@@ -113,7 +113,7 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 		return -1;
 	}
 
-	memcpy(filename, root_dir, strlen(root_dir) * sizeof(char) + sizeof(char));
+	memcpy(filename, root_dir, strlen(root_dir) + 1);
 	strcat(filename, request.url);
 	printf("Check file '%s'\n", filename);
 	if (stat(filename, &sb) == -1) {
@@ -128,21 +128,33 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 		return -1;
 	}
 	if (S_ISDIR(sb.st_mode)) {
-		//TODO: Add server url (localhost:8080)
-		char* newlocation = malloc(strlen(request.url) * sizeof(char) + 12 * sizeof(char));
-		if (newlocation != NULL)
+		//HOST + URL + index.html
+		if (request.host != NULL && request.url != NULL)
 		{
-			memcpy(newlocation, request.url, strlen(request.url) * sizeof(char) + sizeof(char));
-			strcat(newlocation, "/index.html");
-			server_answer_error_ex(sd, HTTP_STATUS_MOVED_PERMANENTLY, newlocation);
-			free(newlocation);
-			newlocation = NULL;
+			char* newlocation = calloc( strlen(request.url) + 7 + 11, 1);//strlen(request.host) +
+			if (newlocation != NULL)
+			{
+				strcpy(newlocation, "http://");
+				//memcpy(newlocation, request.host, strlen(request.host) + 1);
+				strcat(newlocation, request.host);
+				strcat(newlocation, request.url);
+				strcat(newlocation, "/index.html");
+				server_answer_error_ex(sd, HTTP_STATUS_MOVED_PERMANENTLY, newlocation);
+				free(newlocation);
+				newlocation = NULL;
+			}
+			else
+			{
+				perror("SERVER: Allocate memory failed.\n");
+				server_answer_error(sd, HTTP_STATUS_INTERNAL_SERVER_ERROR);
+			}
 		}
 		else
 		{
-			perror("SERVER: Allocate memory failed.\n");
+			perror("SERVER: Host or url is not initalized\n");
 			server_answer_error(sd, HTTP_STATUS_INTERNAL_SERVER_ERROR);
 		}
+
 		free(filename);
 		filename = NULL;
 		return -1;
@@ -275,6 +287,7 @@ int server_handle_client(int sd, char* root_dir) {
 		http_header_t request = http_parse_header(buf);
 		ret = server_answer(sd, request, root_dir);
 		free(request.url);
+		free(request.host);
 	}
 
 	close(sd);
