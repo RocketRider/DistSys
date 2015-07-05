@@ -192,13 +192,14 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 	//Send response header:
 	ret = write_to_socket(sd, response, strlen(response), SERV_WRITE_TIMEOUT);
 	if (ret < 0) {
-		perror("SERVER: failed to send error response header!");
+		perror("SERVER: failed to send response header!");
 		free(response);
 		response = NULL;
 		free(filename);
 		filename = NULL;
 		free(buffer);
 		buffer = NULL;
+		fclose(fp);
 		return -1;
 	}
 
@@ -213,13 +214,14 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 			{
 				ret = write_to_socket(sd, buffer, read_bytes, SERV_WRITE_TIMEOUT);
 				if (ret < 0) {
-					perror("SERVER: failed to send error response!");
+					perror("SERVER: failed to send response!");
 					free(response);
 					response = NULL;
 					free(filename);
 					filename = NULL;
 					free(buffer);
 					buffer = NULL;
+					fclose(fp);
 					return -1;
 				}
 			}

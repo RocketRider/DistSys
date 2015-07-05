@@ -230,6 +230,15 @@ install_signal_handlers(void)
         perror("sigaction(SIGINT)");
         exit(EXIT_FAILURE);
     } /* end if */
+
+    sa.sa_handler = SIG_IGN;
+    sa.sa_flags = 0;
+    if (sigaction(SIGPIPE, &sa, 0) == -1) {
+      perror("sigaction(SIGPIPE)");
+      exit(1);
+    }
+
+
 } /* end of install_signal_handlers */
 
 
