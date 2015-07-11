@@ -84,7 +84,7 @@ int http_decode_url(const char *s, char *dec)
 
 
 
-char* http_create_header(int status_code, char* server, time_t* last_modified, char* content_type, char* location, int html_length)
+char* http_create_header(int status_code, char* server, time_t* last_modified, char* content_type, char* location, int content_length)
 {
 	char* response = malloc(HTTP_MAX_HEADERSIZE);
 	if (response == NULL)
@@ -133,7 +133,10 @@ char* http_create_header(int status_code, char* server, time_t* last_modified, c
 	sprintf(response + strlen(response), "Accept-Ranges: bytes\n");
 
 	//Content-Length
-	sprintf(response + strlen(response), "Content-Length: %d\n", html_length);
+	if (content_length > 0)
+	{
+		sprintf(response + strlen(response), "Content-Length: %d\n", content_length);
+	}
 
 	//Content-Type
 	sprintf(response + strlen(response), "Content-Type: %s\n", content_type);
@@ -157,8 +160,8 @@ char* http_create_header(int status_code, char* server, time_t* last_modified, c
 http_header_t http_parse_header(char * header)
 {
 	http_header_t header_struct;
-	header_struct.range_begin = 0;
-	header_struct.range_end = 0;
+	header_struct.range_begin = 0;	//From byte 0
+	header_struct.range_end = 0;	//To the end of the file (0 => end of file)
 	header_struct.method = HTTP_METHOD_UNKNOWN;
 	header_struct.url = NULL;
 	header_struct.host = NULL;
@@ -218,6 +221,27 @@ http_header_t http_parse_header(char * header)
 	else
 	{
 		perror("HTTP_HEADER: Can't allocate memory!");
+	}
+
+
+	//Read Range:
+	char* range = strstr(header,"Range: bytes=");//Only bytes are accepted
+	if (range != NULL)
+	{
+		range += 13;
+		char* range_end = strstr(range,"\r\n");
+		char* range_hyphen = strstr(range,"-");
+		if (range_end != NULL && range_hyphen != NULL)
+		{
+			if (range_hyphen != range)//Does not beginn with '-' (start byte is set)
+			{
+				sscanf(range, "%u", &header_struct.range_begin);
+			}
+			if ((range_hyphen+1) != range_end)//Does not end with '-' (end byte is set)
+			{
+				sscanf(range_hyphen+1, "%u", &header_struct.range_end);
+			}
+		}
 	}
 
 

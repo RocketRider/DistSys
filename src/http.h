@@ -52,8 +52,8 @@ typedef struct http_status_entry {
 typedef struct http_header {
 	http_method_t   method;
     char            *url;
-    int				range_begin;
-    int				range_end;
+    unsigned int	range_begin;
+    unsigned int	range_end;
     char			*host;
 } http_header_t;
 

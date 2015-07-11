@@ -29,7 +29,7 @@ init_logging_semaphore(void)
 {
     if ((log_sem = sem_open(SEM_NAME, O_CREAT, S_IRUSR | S_IWUSR, 1)) == SEM_FAILED) {
         err_print("cannot create named semaphore");
-        exit(EXIT_FAILURE);
+        exit(EXIT_FAILURE); //WARNING / TODO Does not free used memory!
     } /* end if */
 } /* end of init_logging_semaphore */
 
