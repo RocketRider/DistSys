@@ -258,11 +258,11 @@ http_header_t http_parse_header(char * header)
 		char* range_hyphen = strstr(range,"-");
 		if (range_end != NULL && range_hyphen != NULL)
 		{
-			if (range_hyphen != range)//Does not beginn with '-' (start byte is set)
+			if (range_hyphen != range)//Does not beginn with '-' (start range is set)
 			{
 				sscanf(range, "%u", &header_struct.range_begin);
 			}
-			if ((range_hyphen+1) != range_end)//Does not end with '-' (end byte is set)
+			if ((range_hyphen+1) != range_end)//Does not end with '-' (end range is set)
 			{
 				sscanf(range_hyphen+1, "%u", &header_struct.range_end);
 			}

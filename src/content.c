@@ -39,7 +39,7 @@ get_http_content_type(const char *filename)
 
     i = 0;
     while (http_content_type_list[i].ext != NULL) {
-        if (strstr(filename, http_content_type_list[i].ext)) {
+		if (strcasecmp(filename, http_content_type_list[i].ext) == 0) {	//To make sure .HTML does work as well
             break;
         } /* end if */
         i++;
