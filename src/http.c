@@ -84,7 +84,7 @@ int http_decode_url(const char *s, char *dec)
 
 
 
-char* http_create_header(int status_code, char* server, time_t* last_modified, char* content_type, char* location, int content_length)
+char* http_create_header(int status_code, char* server, time_t* last_modified, char* content_type, char* location, int content_length, unsigned int range_begin, unsigned int range_end, int file_size)
 {
 	char* response = malloc(HTTP_MAX_HEADERSIZE);
 	if (response == NULL)
@@ -119,8 +119,10 @@ char* http_create_header(int status_code, char* server, time_t* last_modified, c
 	struct tm *my_tm = gmtime(&t);
 	strftime(response + strlen(response), HTTP_MAX_HEADERSIZE - strlen(response), "Date: %a, %d %b %Y %H:%M:%S GMT\n", my_tm);
 
+
 	//Server
 	sprintf(response + strlen(response), "Server: %s\n", server);
+
 
 	//Last-Modified
 	if (last_modified != NULL)
@@ -129,8 +131,25 @@ char* http_create_header(int status_code, char* server, time_t* last_modified, c
 		strftime(response + strlen(response), HTTP_MAX_HEADERSIZE - strlen(response), "Last-Modified: %a, %d %b %Y %H:%M:%S GMT\n", my_tm);
 	}
 
+
 	//Accept-Ranges
 	sprintf(response + strlen(response), "Accept-Ranges: bytes\n");
+
+
+	//Content-Range
+	if (status_code == HTTP_STATUS_PARTIAL_CONTENT)
+	{
+		if (range_end == 0)
+		{
+			range_end = file_size - 1;
+		}
+		sprintf(response + strlen(response), "Content-Range: bytes %u-%u/%d\n", range_begin, range_end, file_size);
+	}
+	if (status_code == HTTP_STATUS_RANGE_NOT_SATISFIABLE)
+	{
+		sprintf(response + strlen(response), "Content-Range: bytes */%d\n", file_size);
+	}
+
 
 	//Content-Length
 	if (content_length > 0)
@@ -138,21 +157,27 @@ char* http_create_header(int status_code, char* server, time_t* last_modified, c
 		sprintf(response + strlen(response), "Content-Length: %d\n", content_length);
 	}
 
+
 	//Content-Type
 	sprintf(response + strlen(response), "Content-Type: %s\n", content_type);
 
+
 	//Location
-	//TODO evtl. encode url?
-	if (strlen(location)>(HTTP_MAX_HEADERSIZE - strlen(response) - 11 - 20 - 1))
+	if (location != NULL && strlen(location) > 0)
 	{
-		perror("HTTP_HEADER: Location is to long for the defined header size!");
-		free(response);response = NULL;
-		return NULL;
+		if (strlen(location)>(HTTP_MAX_HEADERSIZE - strlen(response) - 11 - 19 - 1))
+		{
+			perror("HTTP_HEADER: Location is to long for the defined header size!");
+			free(response);response = NULL;
+			return NULL;
+		}
+		//TODO evtl. encode url?
+		sprintf(response + strlen(response), "Location: %s\n", location);
 	}
-	sprintf(response + strlen(response), "Location: %s\n", location);
+
 
 	//Connection
-	sprintf(response + strlen(response), "Connection: close \n\n");
+	sprintf(response + strlen(response), "Connection: close\n\n");
 	return response;
 }
 

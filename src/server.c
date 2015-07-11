@@ -57,7 +57,7 @@ int static server_answer_error_ex(int sd, int error_code, char* location) {
 
 	int html_length = (int) strlen(html);
 	char* response = http_create_header(error_code, SERV_NAME, NULL,
-			"text/html", location, html_length);
+			"text/html", location, html_length, 0, 0, html_length);
 	if (response == NULL) {
 		perror("SERVER: create error response header failed!");
 		return -1;
@@ -160,14 +160,43 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 		return -1;
 	}
 	int html_length = (int) sb.st_size;
+	int file_size = (int) sb.st_size;
+	int http_code = HTTP_STATUS_OK;
 	time_t mod_date = (time_t) sb.st_mtim.tv_sec;
 
 	//Get mime type
 	char* file_type = get_http_content_type_str(get_http_content_type(filename));
 
 
+
+	//Check Range
+	if (request.range_begin != 0 || request.range_end != 0) //Is Range request
+	{
+		if (request.range_begin >= request.range_end && request.range_end != 0)//If range end is set, it has to be bigger than begin
+		{
+			perror("SERVER: range is invalid!");
+			server_answer_error(sd, HTTP_STATUS_BAD_REQUEST);
+			free(filename);
+			filename = NULL;
+			return -1;
+		}
+		if (request.range_end > html_length || request.range_begin >= html_length)
+		{
+			perror("SERVER: range is out of file!");
+			server_answer_error(sd, HTTP_STATUS_RANGE_NOT_SATISFIABLE);
+			free(filename);
+			filename = NULL;
+			return -1;
+		}
+		else
+		{
+			html_length = request.range_end - request.range_begin;
+			http_code = HTTP_STATUS_PARTIAL_CONTENT;
+		}
+	}
+
 	//Create header
-	char* response = http_create_header(200, SERV_NAME, &mod_date, file_type, " ", html_length);
+	char* response = http_create_header(http_code, SERV_NAME, &mod_date, file_type, "", html_length, request.range_begin, request.range_end, file_size);
 	if (response == NULL) {
 		perror("SERVER: create response header failed!");
 		server_answer_error(sd, HTTP_STATUS_INTERNAL_SERVER_ERROR);
@@ -217,11 +246,24 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 
 
 	//Send response body
+	fseek(fp, request.range_begin, SEEK_SET);
 	int read_bytes = 0;
+	int send_bytes = 0;
 	if (html_length > 0 && request.method != HTTP_METHOD_HEAD) {
 		do{
+			//If Range is specified, only read the needed part of the file:
+			int to_read_bytes = html_length;
+			if (request.range_end > 0)//End is specified
+			{
+				to_read_bytes -= send_bytes;
+			}
+			if (to_read_bytes > SERV_SEND_BUFFER_SIZE) //Max read with buffer size
+			{
+				to_read_bytes = SERV_SEND_BUFFER_SIZE;
+			}
 
-			read_bytes = fread(buffer, 1, SERV_SEND_BUFFER_SIZE, fp);
+			read_bytes = fread(buffer, 1, to_read_bytes, fp);
+			send_bytes += read_bytes;
 			if (read_bytes > 0)
 			{
 				ret = write_to_socket(sd, buffer, read_bytes, SERV_WRITE_TIMEOUT);

@@ -28,13 +28,17 @@ setlocale(LC_TIME, $locale_str) or die "Cannot set LC_TIME to '$locale_str'";
 # Test Cases
 #--------------------------------------------------------------------------
 my @tests = (
-    # If-Modified-Since
+    # Range
     [ { method => 'GET',  url => "/index.html", status => 206, range => 'bytes=6764-' } ],
 	[ { method => 'HEAD',  url => "/index.html", status => 206, range => 'bytes=6764-' } ],
 	[ { method => 'GET',  url => "/index.html", status => 206, range => 'bytes=-6764' } ],
 	[ { method => 'HEAD',  url => "/index.html", status => 206, range => 'bytes=-6764' } ],
 	[ { method => 'GET',  url => "/index.html", status => 206, range => 'bytes=6764-7000' } ],
-	[ { method => 'HEAD',  url => "/index.html", status => 206, range => 'bytes=6764-7000' } ]
+	[ { method => 'HEAD',  url => "/index.html", status => 206, range => 'bytes=6764-7000' } ],
+	[ { method => 'GET',  url => "/index.html", status => 416, range => 'bytes=7768-' } ],
+	[ { method => 'HEAD',  url => "/index.html", status => 416, range => 'bytes=7768-' } ],
+	[ { method => 'GET',  url => "/index.html", status => 416, range => 'bytes=4000-8000' } ],
+	[ { method => 'HEAD',  url => "/index.html", status => 416, range => 'bytes=4000-8000' } ]
 );
 
 # Set the number of test cases (excluding subtests)
@@ -100,6 +104,8 @@ sub connect_to_server {
         isnt($res->headers->{'server'}, undef, "Server");
 
         if ($ref->{status} == 206) {
+			#TODO **************************************************************************************
+			
             # Determine file properties
             #(my $file, my $file_time, my $file_size) = get_url_properties($root_dir, $ref);
 

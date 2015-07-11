@@ -62,7 +62,7 @@ typedef struct http_header {
 extern http_method_entry_t http_method_list[];
 extern http_status_entry_t http_status_list[];
 extern const int HTTP_STATUS_LIST_SIZE;
-extern char* http_create_header(int status_code, char* server, time_t* last_modified, char* content_type, char* location, int html_length);
+extern char* http_create_header(int status_code, char* server, time_t* last_modified, char* content_type, char* location, int html_length, unsigned int range_begin, unsigned int range_end, int file_size);
 extern http_header_t http_parse_header(char * header);
 
 #endif
