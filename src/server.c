@@ -175,14 +175,25 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 	char* file_type = get_http_content_type_str(get_http_content_type(filename));
 
 
+	//Check modified since
+	if (request.if_modified_since != 0 )
+	{
+		if (difftime(request.if_modified_since, mod_date) >= 0)
+		{
+			server_answer_error(sd, HTTP_STATUS_NOT_MODIFIED);
+			free(filename);
+			filename = NULL;
+			return -1;
+		}
+	}
 
 	//Check Range
-	if (request.range_begin != 0 || request.range_end != 0) //Is Range request
+	if (request.is_range_request == 1) //Is Range request
 	{
 		if (request.range_begin >= request.range_end && request.range_end != 0)//If range end is set, it has to be bigger than begin
 		{
-			perror("SERVER: range is invalid!");
-			server_answer_error(sd, HTTP_STATUS_BAD_REQUEST);
+			perror("SERVER: range end is before range begin!");
+			server_answer_error(sd, HTTP_STATUS_RANGE_NOT_SATISFIABLE);
 			free(filename);
 			filename = NULL;
 			return -1;

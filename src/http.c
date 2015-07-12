@@ -187,9 +187,11 @@ http_header_t http_parse_header(char * header)
 	http_header_t header_struct;
 	header_struct.range_begin = 0;	//From byte 0
 	header_struct.range_end = 0;	//To the end of the file (0 => end of file)
+	header_struct.is_range_request = 0;
 	header_struct.method = HTTP_METHOD_UNKNOWN;
 	header_struct.url = NULL;
 	header_struct.host = NULL;
+	header_struct.if_modified_since = 0;
 
 	//Read HTTP method
 	for (int i = 0; i < HTTP_METHOD_LIST_SIZE-1 ; i++)
@@ -203,11 +205,11 @@ http_header_t http_parse_header(char * header)
 
 
 	//Read Host
-	char* host = strstr(header,"Host: ");
+	char* host = strstr(header,"\r\nHost: ");
 	size_t host_size = 0;
 	if (host != NULL)
 	{
-		host += 6;
+		host += 8;
 		char* host_end = strstr(host,"\r\n");
 		host_size = host_end - host;
 		header_struct.host = calloc(host_size + 1, 1);//Set Null byte at the end of the string
@@ -218,7 +220,6 @@ http_header_t http_parse_header(char * header)
 		}
 
 	}
-
 
 
 	//Read URL
@@ -250,10 +251,10 @@ http_header_t http_parse_header(char * header)
 
 
 	//Read Range:
-	char* range = strstr(header,"Range: bytes=");//Only bytes are accepted
+	char* range = strstr(header,"\r\nRange: bytes=");//Only bytes are accepted
 	if (range != NULL)
 	{
-		range += 13;
+		range += 15;
 		char* range_end = strstr(range,"\r\n");
 		char* range_hyphen = strstr(range,"-");
 		if (range_end != NULL && range_hyphen != NULL)
@@ -266,7 +267,23 @@ http_header_t http_parse_header(char * header)
 			{
 				sscanf(range_hyphen+1, "%u", &header_struct.range_end);
 			}
+
+			header_struct.is_range_request = 1;
 		}
+	}
+
+
+	//If modified since
+	char* modified_since = strstr(header,"\r\nIf-Modified-Since: ");//Only bytes are accepted
+	if (modified_since != NULL)
+	{
+		modified_since += 21;
+
+		struct tm my_tm;// = gmtime(header_struct.if_modified_since);
+		strptime(modified_since, "%a, %d %b %Y %H:%M:%S GMT", &my_tm);
+		header_struct.if_modified_since = mktime(&my_tm);
+
+
 	}
 
 

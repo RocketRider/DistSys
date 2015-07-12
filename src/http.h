@@ -54,7 +54,9 @@ typedef struct http_header {
     char            *url;
     unsigned int	range_begin;
     unsigned int	range_end;
+    int				is_range_request;
     char			*host;
+    time_t			if_modified_since;
 } http_header_t;
 
 
