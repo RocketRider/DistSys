@@ -30,7 +30,7 @@
 #include "time.h"
 #include "http.h"
 #include "content.h"
-
+#include "tinyweb.h"
 
 #include "../libsockets/connect_tcp.h"
 #include "../libsockets/passive_tcp.h"
@@ -128,43 +128,53 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 		return -1;
 	}
 	if (S_ISDIR(sb.st_mode)) {
-		//HOST + URL + index.html
-		if (request.host != NULL && request.url != NULL)
+		if (*(request.url+strlen(request.url)-1) != '/')
 		{
-			char* newlocation = calloc(strlen(request.host) + strlen(request.url) + 7 + 11, 1);//2
-			if (newlocation != NULL)
+			//HOST + URL + index.html
+			if (request.host != NULL && request.url != NULL)
 			{
-				strcpy(newlocation, "http://");
-				strcat(newlocation, request.host);
-				strcat(newlocation, request.url);
-				if (*(newlocation+strlen(newlocation)-1) != '/')
+				char* newlocation = calloc(strlen(request.host) + strlen(request.url) + 7 + 11, 1);//2
+				if (newlocation != NULL)
 				{
+					strcpy(newlocation, "http://");
+					strcat(newlocation, request.host);
+					strcat(newlocation, request.url);
 					strcat(newlocation, "/");
 					server_answer_error_ex(sd, HTTP_STATUS_MOVED_PERMANENTLY, newlocation);
+					free(newlocation);
+					newlocation = NULL;
 				}
 				else
 				{
-					strcat(newlocation, "index.html");
-					server_answer_error_ex(sd, HTTP_STATUS_MOVED_PERMANENTLY, newlocation);
+					perror("SERVER: Allocate memory failed.\n");
+					server_answer_error(sd, HTTP_STATUS_INTERNAL_SERVER_ERROR);
 				}
-				free(newlocation);
-				newlocation = NULL;
 			}
 			else
 			{
-				perror("SERVER: Allocate memory failed.\n");
+				perror("SERVER: Host or url is not initalized\n");
 				server_answer_error(sd, HTTP_STATUS_INTERNAL_SERVER_ERROR);
 			}
+
+			free(filename);
+			filename = NULL;
+			return -1;
 		}
 		else
 		{
-			perror("SERVER: Host or url is not initalized\n");
-			server_answer_error(sd, HTTP_STATUS_INTERNAL_SERVER_ERROR);
-		}
+			free(filename);
+			filename = NULL;
 
-		free(filename);
-		filename = NULL;
-		return -1;
+			request.url = realloc(request.url, strlen(request.url)+1+strlen(DEFAULT_HTML_PAGE));
+			if (request.url == NULL)
+			{
+				perror("SERVER: Can't resize memory\n");
+				server_answer_error(sd, HTTP_STATUS_INTERNAL_SERVER_ERROR);
+				return -1;
+			}
+			strcat(request.url, DEFAULT_HTML_PAGE);
+			return server_answer(sd, request, root_dir); //Retest the new file
+		}
 	}
 	int html_length = (int) sb.st_size;
 	int file_size = (int) sb.st_size;
