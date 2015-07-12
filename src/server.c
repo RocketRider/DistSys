@@ -135,7 +135,6 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 			if (newlocation != NULL)
 			{
 				strcpy(newlocation, "http://");
-				//memcpy(newlocation, request.host, strlen(request.host) + 1);
 				strcat(newlocation, request.host);
 				strcat(newlocation, request.url);
 				if (*(newlocation+strlen(newlocation)-1) != '/')

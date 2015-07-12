@@ -8,7 +8,7 @@ use lib 't/lib';
 use locale;
 use POSIX qw(locale_h); # Imports setlocale() and the LC_ constants.
 
-use POSIX qw(tzset strftime);
+use POSIX qw(tzset);
 use File::stat;
 use LWP::UserAgent;
 use Test::More;
@@ -28,17 +28,20 @@ setlocale(LC_TIME, $locale_str) or die "Cannot set LC_TIME to '$locale_str'";
 # Test Cases
 #--------------------------------------------------------------------------
 my @tests = (
-    # Range
-    [ { method => 'GET',  url => "/index.html", status => 206, range => 'bytes=6764-' } ],
-	[ { method => 'HEAD',  url => "/index.html", status => 206, range => 'bytes=6764-' } ],
-	[ { method => 'GET',  url => "/index.html", status => 206, range => 'bytes=-6764' } ],
-	[ { method => 'HEAD',  url => "/index.html", status => 206, range => 'bytes=-6764' } ],
-	[ { method => 'GET',  url => "/index.html", status => 206, range => 'bytes=6764-7000' } ],
-	[ { method => 'HEAD',  url => "/index.html", status => 206, range => 'bytes=6764-7000' } ],
-	[ { method => 'GET',  url => "/index.html", status => 416, range => 'bytes=7768-' } ],
-	[ { method => 'HEAD',  url => "/index.html", status => 416, range => 'bytes=7768-' } ],
-	[ { method => 'GET',  url => "/index.html", status => 416, range => 'bytes=4000-8000' } ],
-	[ { method => 'HEAD',  url => "/index.html", status => 416, range => 'bytes=4000-8000' } ]
+    # Ranges
+    [ { method => 'GET',  url => "/index.html", status => 416, range_offset => -1 } ],
+    [ { method => 'GET',  url => "/index.html", status => 206, range_offset => 1000 } ],
+    [ { method => 'GET',  url => "/index.html", status => 206, range_offset => 1 } ],
+    [ { method => 'GET',  url => "/index.html", status => 206, range_offset => -2 } ],
+    [ { method => 'GET',  url => "/index.html", status => 206, range_offset => -500 } ],
+    [ { method => 'GET',  url => "/index.html", status => 206, range_offset => 500 } ],
+    [ { method => 'GET',  url => "/images/computerhead1.gif", status => 416, range_offset => -1 } ],
+    [ { method => 'GET',  url => "/images/computerhead1.gif", status => 416, range_offset => 100000 } ],
+    [ { method => 'GET',  url => "/images/computerhead1.gif", status => 206, range_offset => 0 } ],
+    [ { method => 'GET',  url => "/images/computerhead1.gif", status => 206, range_offset => 1 } ],
+    [ { method => 'GET',  url => "/images/computerhead1.gif", status => 206, range_offset => -2 } ],
+    [ { method => 'GET',  url => "/images/computerhead1.gif", status => 206, range_offset => -500 } ],
+    [ { method => 'GET',  url => "/images/computerhead1.gif", status => 206, range_offset => 500 } ]
 );
 
 # Set the number of test cases (excluding subtests)
@@ -80,8 +83,11 @@ sub connect_to_server {
     # Create a request
     my $req = HTTP::Request->new($method => "http://$remote_host:$remote_port$remote_path$url");
     $req->header('Accept' => '*/*');
-    if (exists $ref->{range}) {
-        $req->header('Range' => $ref->{range});
+    if (exists $ref->{range_offset}) {
+        my $st = stat($root_dir . $url) or die "ERROR: cannot access $url: $!";
+        $offset = ($ref->{range_offset} < 0) ?
+                   $st->size + $ref->{range_offset} + 1 : $ref->{range_offset};
+        $req->header('Range' => "bytes=$offset-");
     } # end if
 
     # Pass request to the user agent and get a response back from the server
@@ -91,7 +97,7 @@ sub connect_to_server {
         #--------------------------------------------------
         # Subtest: HTTP Status is as expected
         #--------------------------------------------------
-        like($res->status_line, qr/^$ref->{status}/, "Status");
+        like($res->status_line, qr/^$ref->{status}/, "Status") or skip "Skip header tests", 6;
 
         #--------------------------------------------------
         # Subtest: Date and time is correct
@@ -104,27 +110,34 @@ sub connect_to_server {
         isnt($res->headers->{'server'}, undef, "Server");
 
         if ($ref->{status} == 206) {
-			#TODO **************************************************************************************
-			
             # Determine file properties
-            #(my $file, my $file_time, my $file_size) = get_url_properties($root_dir, $ref);
+            (my $file, my $file_time, my $file_size) = get_url_properties($root_dir, $ref);
 
             #------------------------------------------------------------------
             # Subtest: Header field 'Last-Modified' equal to file mtime
             #------------------------------------------------------------------
-            #is($res->headers->{'last-modified'}, $file_time, "Last-Modified");
+            is($res->headers->{'last-modified'}, $file_time, "Last-Modified");
 
             #------------------------------------------------------------------
             # Subtest: Header field 'Content-Length' equal to file size
             #------------------------------------------------------------------
-            #my $exp_size = (defined $offset) ? $file_size - $offset : $file_size;
-            #is($res->headers->{'content-length'}, $exp_size, "Content-Length");
+            my $exp_size = (defined $offset) ? $file_size - $offset : $file_size;
+            is($res->headers->{'content-length'}, $exp_size, "Content-Length");
+
+            #------------------------------------------------------------------
+            # Subtest: Header field 'Content-Range'
+            #------------------------------------------------------------------
+            my $range_str = undef;
+            if (defined $offset) {
+                $range_str = sprintf "bytes %d-%d/%d", $offset, $file_size-1, $file_size;
+                is($res->headers->{'content-range'}, $range_str, "Content-Range");
+            } # end if
 
             #------------------------------------------------------------------
             # Subtest: Provided response body matches file content
             #------------------------------------------------------------------
-            #check_file_content($res->content, $file, $offset) if $method eq 'GET';
+            check_file_content($res->content, $file, $offset) if $method eq 'GET';
         } # end if
-    };
+    } # end if
 } # end of connect_to_server
 
