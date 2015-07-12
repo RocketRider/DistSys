@@ -195,11 +195,16 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 			filename = NULL;
 			return -1;
 		}
-		else
+		if (request.range_end > 0)
 		{
 			html_length = request.range_end - request.range_begin;
-			http_code = HTTP_STATUS_PARTIAL_CONTENT;
 		}
+		else
+		{
+			html_length = file_size - request.range_begin;
+		}
+		http_code = HTTP_STATUS_PARTIAL_CONTENT;
+		
 	}
 
 	//Create header
