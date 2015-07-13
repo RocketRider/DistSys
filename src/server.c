@@ -90,7 +90,7 @@ int static server_answer_error(int sd, int error_code)
 	return server_answer_error_ex(sd, error_code, " ");
 }
 
-int static server_execute_cgi(int sd, http_header_t request, char* filename) //Is executable is already checked!
+int static server_execute_cgi(int sd, char* filename) //'Is executable' is already checked!
 {
 	char* response = malloc(HTTP_MAX_HEADERSIZE);
 	if (response == NULL)
@@ -224,7 +224,7 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 	{
 		if (S_IXOTH & sb.st_mode)
 		{
-			ret = server_execute_cgi(sd, request, filename);
+			ret = server_execute_cgi(sd, filename);
 			free(filename);
 			filename = NULL;
 			return ret;
