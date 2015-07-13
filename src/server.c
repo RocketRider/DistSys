@@ -16,6 +16,7 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <syslog.h>
@@ -180,6 +181,24 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 	int file_size = (int) sb.st_size;
 	int http_code = HTTP_STATUS_OK;
 	time_t mod_date = (time_t) sb.st_mtim.tv_sec;
+
+	if (memcmp(request.url, "/cgi-bin/", 9) == 0)
+	{
+		if (S_IXOTH & sb.st_mode)
+		{
+			//TODO
+			server_answer_error(sd, HTTP_STATUS_INTERNAL_SERVER_ERROR);
+			return -1;
+		}
+		else
+		{
+			server_answer_error(sd, HTTP_STATUS_FORBIDDEN);
+			free(filename);
+			filename = NULL;
+			return -1;
+		}
+	}
+
 
 	//Get mime type
 	char* file_type = get_http_content_type_str(get_http_content_type(filename));
