@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #include "time.h"
 #include "http.h"
 #include "content.h"
@@ -88,6 +89,42 @@ int static server_answer_error(int sd, int error_code)
 {
 	return server_answer_error_ex(sd, error_code, " ");
 }
+
+int static server_execute_cgi(int sd, http_header_t request, char* filename) //Is executable is already checked!
+{
+	char* response = malloc(HTTP_MAX_HEADERSIZE);
+	if (response == NULL)
+	{
+		perror("HTTP_HEADER: Can't allocate memory!");
+		return -1;
+	}
+	memcpy(response, "HTTP/1.1 ", 10);
+	sprintf(response + strlen(response), "%d %s\n", HTTP_STATUS_OK, "OK");
+
+	//Date
+	time_t t = time(NULL);
+	struct tm *my_tm = gmtime(&t);
+	strftime(response + strlen(response), HTTP_MAX_HEADERSIZE - strlen(response), "Date: %a, %d %b %Y %H:%M:%S GMT\n", my_tm);
+
+	//Server
+	sprintf(response + strlen(response), "Server: %s\n", SERV_NAME);
+
+	//Send response header:
+	int ret = write_to_socket(sd, response, strlen(response), SERV_WRITE_TIMEOUT);
+	if (ret < 0) {
+		perror("SERVER: failed to send response header!");
+		free(response);
+		response = NULL;
+		return -1;
+	}
+
+	dup2(sd, STDOUT_FILENO);
+	execl(filename, filename, NULL);
+	exit(EXIT_FAILURE);
+
+	return 0;
+}
+
 
 
 int static server_answer(int sd, http_header_t request, char* root_dir) {
@@ -182,13 +219,15 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 	int http_code = HTTP_STATUS_OK;
 	time_t mod_date = (time_t) sb.st_mtim.tv_sec;
 
+	//Test for cgi-bin path
 	if (memcmp(request.url, "/cgi-bin/", 9) == 0)
 	{
 		if (S_IXOTH & sb.st_mode)
 		{
-			//TODO
-			server_answer_error(sd, HTTP_STATUS_INTERNAL_SERVER_ERROR);
-			return -1;
+			ret = server_execute_cgi(sd, request, filename);
+			free(filename);
+			filename = NULL;
+			return ret;
 		}
 		else
 		{
