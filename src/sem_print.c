@@ -83,7 +83,7 @@ print_debug(const char *format, ...)
     va_list args;
     char buf[MAXS];
 
-    if (verbosity_level < 2) {
+    if (verbosity_level < 1) {//Edit: verbose is only set to 1!
         return 0;
     } /* end if */
 
@@ -106,51 +106,29 @@ print_debug(const char *format, ...)
 } /* end of print_debug */
 
 
+
+
+
 void
 print_http_header(const char *what, const char *response_str)
 {
-    char *ptr;
-    char *prev_ptr;
-    char *buffer;
     size_t len;
 
     if (verbosity_level == 0) {
         return;
     } /* end if */
 
-    /* allocate a separate buffer and copy into it the response string
-     * because we need to add EOS characters into the string in order
-     * to separate the individual response header lines */
     len = strlen(response_str);
-    buffer = (char *)malloc(len + 1);
-    if (buffer != NULL) {
-        strcpy(buffer, response_str);
-    } else {
-        err_print("cannot allocate memory");
-        return;
-    } /* end if */
 
     if (log_sem != NULL && sem_wait(log_sem) < 0) {
         err_print("semaphore wait");
     } /* end if */
 
-    printf("[%d] %s HEADER (%zd Bytes):\n", getpid(), what, len);
-
-    prev_ptr = buffer;
-    while (1) {
-        if ((ptr = strstr(prev_ptr, "\r\n")) == NULL) {
-            break;
-        } /* end if */
-
-        *ptr = '\0';
-        printf("  %s\n", prev_ptr);
-        prev_ptr = ptr+2;   // Note: strlen("\r\n") = 2
-    } /* end while */
+    printf("[%d] %s HEADER (%zd Bytes):\n%s", getpid(), what, len, response_str);
 
     if (log_sem != NULL && sem_post(log_sem) < 0) {
         err_print("semaphore post");
     } /* end if */
 
-    free(buffer);
 } /* end of print_http_header */
 

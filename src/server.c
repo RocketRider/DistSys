@@ -33,6 +33,7 @@
 #include "http.h"
 #include "content.h"
 #include "tinyweb.h"
+#include "sem_print.h"
 
 #include "../libsockets/connect_tcp.h"
 #include "../libsockets/passive_tcp.h"
@@ -61,12 +62,13 @@ int static server_answer_error_ex(int sd, int error_code, char* location) {
 	char* response = http_create_header(error_code, SERV_NAME, NULL,
 			"text/html", location, html_length, 0, 0, html_length);
 	if (response == NULL) {
-		perror("SERVER: create error response header failed!");
+		err_print("Create error response header failed!");
 		return -1;
 	}
+	print_http_header("RESPONSE", response);
 	ret = write_to_socket(sd, response, strlen(response), SERV_WRITE_TIMEOUT);
 	if (ret < 0) {
-		perror("SERVER: failed to send error response header!");
+		err_print("Failed to send error response header!");
 		free(response);
 		response = NULL;
 		return -1;
@@ -74,7 +76,7 @@ int static server_answer_error_ex(int sd, int error_code, char* location) {
 	if (html_length > 0) {
 		ret = write_to_socket(sd, html, html_length, SERV_WRITE_TIMEOUT);
 		if (ret < 0) {
-			perror("SERVER: failed to send error response!");
+			err_print("Failed to send error response!");
 			free(response);
 			response = NULL;
 			return -1;
@@ -85,9 +87,9 @@ int static server_answer_error_ex(int sd, int error_code, char* location) {
 	response = NULL;
 	return 0;
 }
-int static server_answer_error(int sd, int error_code)
+int static inline server_answer_error(int sd, int error_code)
 {
-	return server_answer_error_ex(sd, error_code, " ");
+	return server_answer_error_ex(sd, error_code, "");
 }
 
 int static server_execute_cgi(int sd, char* filename) //'Is executable' is already checked!
@@ -95,7 +97,7 @@ int static server_execute_cgi(int sd, char* filename) //'Is executable' is alrea
 	char* response = malloc(HTTP_MAX_HEADERSIZE);
 	if (response == NULL)
 	{
-		perror("HTTP_HEADER: Can't allocate memory!");
+		err_print("Can't allocate memory!");
 		return -1;
 	}
 	memcpy(response, "HTTP/1.1 ", 10);
@@ -110,19 +112,24 @@ int static server_execute_cgi(int sd, char* filename) //'Is executable' is alrea
 	sprintf(response + strlen(response), "Server: %s\n", SERV_NAME);
 
 	//Send response header:
+	print_http_header("RESPONSE CGI", response);
 	int ret = write_to_socket(sd, response, strlen(response), SERV_WRITE_TIMEOUT);
 	if (ret < 0) {
-		perror("SERVER: failed to send response header!");
+		err_print("Failed to send response header!");
 		free(response);
 		response = NULL;
 		return -1;
 	}
 
+	int saved_stdout = dup(1);
 	dup2(sd, STDOUT_FILENO);
 	execl(filename, filename, NULL);
+
+	//execl failed:
+	dup2(saved_stdout, STDOUT_FILENO);
+	err_print("execl failed!");
 	exit(EXIT_FAILURE);
 
-	return 0;
 }
 
 
@@ -133,7 +140,7 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 	//Check http method
 	if (request.method == HTTP_METHOD_NOT_IMPLEMENTED
 			|| request.method == HTTP_METHOD_UNKNOWN) {
-		perror("SERVER: http method is not supported!");
+		print_debug("HTTP method is not supported!\n");
 		server_answer_error(sd, HTTP_STATUS_NOT_IMPLEMENTED);
 		return -1;
 	}
@@ -146,17 +153,17 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 					+ 1);
 	if (filename == NULL)
 	{
-		perror("SERVER: Allocate memory failed.\n");
+		err_print("Allocate memory failed!");
 		server_answer_error(sd, HTTP_STATUS_INTERNAL_SERVER_ERROR);
 		return -1;
 	}
-
 	memcpy(filename, root_dir, strlen(root_dir) + 1);
 	strcat(filename, request.url);
-	printf("Check file '%s'\n", filename);
+	//printf("Check file '%s'\n", filename);
 	if (stat(filename, &sb) == -1) {
 		int err = errno;
 		if (err == EACCES) {
+			print_debug("File access is prohibited!\n");
 			server_answer_error(sd, HTTP_STATUS_FORBIDDEN);
 		} else {
 			server_answer_error(sd, HTTP_STATUS_NOT_FOUND);
@@ -165,6 +172,8 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 		filename = NULL;
 		return -1;
 	}
+
+	//Requestet url is a directory?
 	if (S_ISDIR(sb.st_mode)) {
 		if (*(request.url+strlen(request.url)-1) != '/')
 		{
@@ -184,13 +193,13 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 				}
 				else
 				{
-					perror("SERVER: Allocate memory failed.\n");
+					err_print("Allocate memory failed!");
 					server_answer_error(sd, HTTP_STATUS_INTERNAL_SERVER_ERROR);
 				}
 			}
 			else
 			{
-				perror("SERVER: Host or url is not initalized\n");
+				err_print("Host or url is not initalized!");
 				server_answer_error(sd, HTTP_STATUS_INTERNAL_SERVER_ERROR);
 			}
 
@@ -206,7 +215,7 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 			request.url = realloc(request.url, strlen(request.url)+1+strlen(DEFAULT_HTML_PAGE));
 			if (request.url == NULL)
 			{
-				perror("SERVER: Can't resize memory\n");
+				err_print("Can't resize memory!");
 				server_answer_error(sd, HTTP_STATUS_INTERNAL_SERVER_ERROR);
 				return -1;
 			}
@@ -218,6 +227,7 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 	int file_size = (int) sb.st_size;
 	int http_code = HTTP_STATUS_OK;
 	time_t mod_date = (time_t) sb.st_mtim.tv_sec;
+
 
 	//Test for cgi-bin path
 	if (memcmp(request.url, "/cgi-bin/", 9) == 0)
@@ -231,6 +241,7 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 		}
 		else
 		{
+			print_debug("CGI script is not executable\n");
 			server_answer_error(sd, HTTP_STATUS_FORBIDDEN);
 			free(filename);
 			filename = NULL;
@@ -255,12 +266,13 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 		}
 	}
 
+
 	//Check Range
 	if (request.is_range_request == 1) //Is Range request
 	{
 		if (request.range_begin >= request.range_end && request.range_end != 0)//If range end is set, it has to be bigger than begin
 		{
-			perror("SERVER: range end is before range begin!");
+			print_debug("Range end is before range begin!\n");
 			server_answer_error(sd, HTTP_STATUS_RANGE_NOT_SATISFIABLE);
 			free(filename);
 			filename = NULL;
@@ -268,7 +280,7 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 		}
 		if (request.range_end > html_length || request.range_begin >= html_length)
 		{
-			perror("SERVER: range is out of file!");
+			print_debug("Range is out of file!\n");
 			server_answer_error(sd, HTTP_STATUS_RANGE_NOT_SATISFIABLE);
 			free(filename);
 			filename = NULL;
@@ -286,20 +298,22 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 		
 	}
 
+
 	//Create header
 	char* response = http_create_header(http_code, SERV_NAME, &mod_date, file_type, "", html_length, request.range_begin, request.range_end, file_size);
 	if (response == NULL) {
-		perror("SERVER: create response header failed!");
+		err_print("Create response header failed!");
 		server_answer_error(sd, HTTP_STATUS_INTERNAL_SERVER_ERROR);
 		free(filename);
 		filename = NULL;
 		return -1;
 	}
 
+
 	//Open file
 	FILE *fp = fopen(filename, "r"); //open in read mode
 	if (fp == NULL) {
-		perror("SERVER: Error while opening file.\n");
+		print_debug("Error while opening file!\n");
 		server_answer_error(sd, HTTP_STATUS_FORBIDDEN);
 		free(response);
 		response = NULL;
@@ -308,10 +322,11 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 		return -1;
 	}
 
+
 	//Allocate send data buffer
 	char* buffer = (char*) malloc(SERV_SEND_BUFFER_SIZE);
 	if (buffer == NULL) {
-		perror("SERVER: can't allocate memory!");
+		err_print("Can't allocate memory!");
 		server_answer_error(sd, HTTP_STATUS_INTERNAL_SERVER_ERROR);
 		free(response);
 		response = NULL;
@@ -321,10 +336,12 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 		return -1;
 	}
 
+
 	//Send response header:
+	print_http_header("RESPONSE", response);
 	ret = write_to_socket(sd, response, strlen(response), SERV_WRITE_TIMEOUT);
 	if (ret < 0) {
-		perror("SERVER: failed to send response header!");
+		err_print("Failed to send response header!");
 		free(response);
 		response = NULL;
 		free(filename);
@@ -359,7 +376,7 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 			{
 				ret = write_to_socket(sd, buffer, read_bytes, SERV_WRITE_TIMEOUT);
 				if (ret < 0) {
-					perror("SERVER: failed to send response!");
+					err_print("Failed to send response!");
 					free(response);
 					response = NULL;
 					free(filename);
@@ -374,6 +391,7 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 		while (read_bytes == SERV_SEND_BUFFER_SIZE);
 	}
 
+
 	//Free used resources
 	fclose(fp);
 	free(buffer);
@@ -382,7 +400,6 @@ int static server_answer(int sd, http_header_t request, char* root_dir) {
 	response = NULL;
 	free(filename);
 	filename = NULL;
-
 	return 0;
 }
 
@@ -413,10 +430,10 @@ int server_handle_client(int sd, char* root_dir) {
 
 
 	if (ret < 0 || cc <= 0) {
-		perror("SERVER: receiving request failed!");
+		print_debug("Receiving request failed!\n");
 		server_answer_error(sd, HTTP_STATUS_BAD_REQUEST);
 	} else {
-		printf("Request: \n%.*s\n", cc, buf);
+		print_http_header("REQUEST", buf);
 		http_header_t request = http_parse_header(buf);
 		ret = server_answer(sd, request, root_dir);
 		free(request.url);
@@ -438,15 +455,15 @@ int server_accept_clients(int sd, char* root_dir) {
 	from_client_len = sizeof(from_client);
 	newsd = accept(sd, /*INOUT*/(struct sockaddr*) &from_client, /*INOUT*/
 			&from_client_len);
-	printf("new client\n");
+	print_debug("New client\n");
 	if (newsd < 0) //Server Problem
-			{
+	{
+		err_print("Failed to accept client!");
 		retcode = newsd;
-		//TODO: Error!!
 	} else {
 		int pid = -1;
 		if ((pid = fork()) < 0) {
-			perror("fork()");
+			err_print("fork failed!");
 			exit(1);
 
 		} else if (pid == 0)/* child process */
@@ -471,8 +488,8 @@ int server_start(int port) {
 
 	sd = passive_tcp(port, SERV_QLEN);
 	if (sd < 0) {
-		perror("Failed to create socket!\n");
-		//TODO: ERROR
+		err_print("Failed to create socket!");
+		return -1;
 	}
 
 	return sd;

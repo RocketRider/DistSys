@@ -184,6 +184,8 @@ get_options(int argc, char *argv[], prog_options_t *opt)
 static void
 open_logfile(prog_options_t *opt)
 {
+	set_verbosity_level(opt->verbose);
+
     // open logfile or redirect to stdout
     if (opt->log_filename != NULL && strcmp(opt->log_filename, "-") != 0) {
         opt->log_fd = fopen(opt->log_filename, "w");
@@ -267,6 +269,7 @@ main(int argc, char *argv[])
     install_signal_handlers();
     init_logging_semaphore();
 
+
     // start the server and handle clients...
     printf("[%d] Starting server '%s on port %d'...\n", getpid(), my_opt.progname, my_opt.server_port);
     server_running = true;
@@ -278,7 +281,7 @@ main(int argc, char *argv[])
 		}
 	}
     
-    printf("[%d] Good Bye...\n", getpid());
+    print_debug("Good Bye...\n");
     
 
     //Free options

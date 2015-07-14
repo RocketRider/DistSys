@@ -9,7 +9,7 @@ DIR=${1:-web}
 # Do not check whether the root directory exists at this level.
 # Let tinyweb deal with it...
 #./build/$BUILD_DIR/tinyweb_debug -p 8080 -d ${DIR} -f -
-valgrind -v --leak-check=full --show-leak-kinds=all --track-origins=yes ./build/$BUILD_DIR/tinyweb_debug -p 8080 -d ${DIR} -f -
+valgrind -v --leak-check=full --show-leak-kinds=all --track-origins=yes ./build/$BUILD_DIR/tinyweb_debug -v -p 8080 -d ${DIR} -f -
 
 echo "Exit status: " $?
 

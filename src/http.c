@@ -89,7 +89,7 @@ char* http_create_header(int status_code, char* server, time_t* last_modified, c
 	char* response = malloc(HTTP_MAX_HEADERSIZE);
 	if (response == NULL)
 	{
-		perror("HTTP_HEADER: Can't allocate memory!");
+		err_print("Can't allocate memory!");
 		return NULL;
 	}
 	memcpy(response, "HTTP/1.1 ", 10);
@@ -107,7 +107,7 @@ char* http_create_header(int status_code, char* server, time_t* last_modified, c
 	}
 	if (http_status_list_index >= http_status_list_size)
 	{
-		perror("HTTP_HEADER: Unknown status code!");
+		err_print("Unknown status code!");
 		free(response);response = NULL;
 		return NULL;
 	}
@@ -167,7 +167,7 @@ char* http_create_header(int status_code, char* server, time_t* last_modified, c
 	{
 		if (strlen(location)>(HTTP_MAX_HEADERSIZE - strlen(response) - 11 - 19 - 1))
 		{
-			perror("HTTP_HEADER: Location is to long for the defined header size!");
+			err_print("Location is to long for the defined header size!");
 			free(response);response = NULL;
 			return NULL;
 		}
@@ -218,6 +218,10 @@ http_header_t http_parse_header(char * header)
 			//memset(header_struct.host, 0, host_size + 1);
 			memcpy(header_struct.host, host, host_size);
 		}
+		else
+		{
+			err_print("Can't allocate memory!");
+		}
 
 	}
 
@@ -242,11 +246,11 @@ http_header_t http_parse_header(char * header)
 			}
 		}
 
-		printf("HEADER_URL: '%s'\n", header_struct.url);
+		//printf("HEADER_URL: '%s'\n", header_struct.url);
 	}
 	else
 	{
-		perror("HTTP_HEADER: Can't allocate memory!");
+		err_print("Can't allocate memory!");
 	}
 
 
@@ -279,7 +283,7 @@ http_header_t http_parse_header(char * header)
 	{
 		modified_since += 21;
 
-		struct tm my_tm;// = gmtime(header_struct.if_modified_since);
+		struct tm my_tm;
 		strptime(modified_since, "%a, %d %b %Y %H:%M:%S GMT", &my_tm);
 		header_struct.if_modified_since = mktime(&my_tm);
 
