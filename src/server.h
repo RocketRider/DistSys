@@ -6,7 +6,8 @@
  * Author:  Ralf Reutemann
  *
  *===================================================================*/
- 
+
+
 #ifndef _SERVER_H
 #define _SERVER_H
 	#define SERV_QLEN					8

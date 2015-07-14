@@ -126,6 +126,7 @@ print_http_header(const char *what, const char *response_str)
 
     printf("[%d] %s HEADER (%zd Bytes):\n%s", getpid(), what, len, response_str);
 
+
     if (log_sem != NULL && sem_post(log_sem) < 0) {
         err_print("semaphore post");
     } /* end if */

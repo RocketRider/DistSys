@@ -7,6 +7,8 @@
  *
  *===================================================================*/
 
+
+
 #ifndef _HTTP_H
 #define _HTTP_H
 
@@ -50,7 +52,16 @@ typedef struct http_status_entry {
 } http_status_entry_t;
 
 
-typedef struct http_header {
+typedef struct http_request {
+	//Input
+	char			*request_buffer;
+	char			*ip;
+	time_t			request_time;
+	char			*server;
+	int				sd;
+	char*			root_dir;
+
+	//Parsed data
 	http_method_t   method;
     char            *url;
     unsigned int	range_begin;
@@ -58,15 +69,27 @@ typedef struct http_header {
     int				is_range_request;
     char			*host;
     time_t			if_modified_since;
-} http_header_t;
+
+    //Response
+    http_status_t	response_status;
+    time_t			last_modified;
+    char			*content_type;
+    char			*location;
+    size_t			content_length;
+    size_t			file_size;
+    char			*file_name;
+    char			*response_buffer;
+
+} http_request_t;
 
 
 
 extern http_method_entry_t http_method_list[];
 extern http_status_entry_t http_status_list[];
 extern const int HTTP_STATUS_LIST_SIZE;
-extern char* http_create_header(int status_code, char* server, time_t* last_modified, char* content_type, char* location, int html_length, unsigned int range_begin, unsigned int range_end, int file_size);
-extern http_header_t http_parse_header(char * header);
-
+extern char* http_create_header(http_request_t *http_request);
+extern int http_parse_header(http_request_t *http_request);
+extern http_request_t http_create_struct();
+extern void http_free_struct(http_request_t *http_request);
 #endif
 

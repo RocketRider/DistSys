@@ -1,10 +1,9 @@
 //
 // TODO: Include your module header here
 //
+
 #ifndef _TINYWEB_H
 #define _TINYWEB_H
-#define __USE_XOPEN 1 /* needed for strptime */
-
 
 #include <stdio.h>
 #include <sys/types.h>

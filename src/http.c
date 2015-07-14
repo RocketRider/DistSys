@@ -6,6 +6,7 @@
  * Author:  Ralf Reutemann
  *
  *===================================================================*/
+#define _XOPEN_SOURCE 700 /* needed for strptime */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -84,7 +85,7 @@ int http_decode_url(const char *s, char *dec)
 
 
 
-char* http_create_header(int status_code, char* server, time_t* last_modified, char* content_type, char* location, int content_length, unsigned int range_begin, unsigned int range_end, int file_size)
+char* http_create_header(http_request_t *http_request)
 {
 	char* response = malloc(HTTP_MAX_HEADERSIZE);
 	if (response == NULL)
@@ -100,7 +101,7 @@ char* http_create_header(int status_code, char* server, time_t* last_modified, c
 	int http_status_list_size = sizeof(http_status_list)/sizeof(http_status_list[0]);
 
 	for(http_status_list_index = 0; http_status_list_index < http_status_list_size; http_status_list_index++){
-		if(http_status_list[http_status_list_index].code == status_code)
+		if(http_status_list[http_status_list_index].code == http_request->response_status)
 		{
 			break;
 		}
@@ -111,23 +112,22 @@ char* http_create_header(int status_code, char* server, time_t* last_modified, c
 		free(response);response = NULL;
 		return NULL;
 	}
-	sprintf(response + strlen(response), "%d %s\n", status_code, http_status_list[http_status_list_index].text);
+	sprintf(response + strlen(response), "%d %s\n", http_request->response_status, http_status_list[http_status_list_index].text);
 
 
 	//Date
-	time_t t = time(NULL);
-	struct tm *my_tm = gmtime(&t);
+	struct tm *my_tm = gmtime(&(http_request->request_time));
 	strftime(response + strlen(response), HTTP_MAX_HEADERSIZE - strlen(response), "Date: %a, %d %b %Y %H:%M:%S GMT\n", my_tm);
 
 
 	//Server
-	sprintf(response + strlen(response), "Server: %s\n", server);
+	sprintf(response + strlen(response), "Server: %s\n", http_request->server);
 
 
 	//Last-Modified
-	if (last_modified != NULL)
+	if (http_request->last_modified != 0)
 	{
-		my_tm = gmtime(last_modified);
+		my_tm = gmtime(&(http_request->last_modified));
 		strftime(response + strlen(response), HTTP_MAX_HEADERSIZE - strlen(response), "Last-Modified: %a, %d %b %Y %H:%M:%S GMT\n", my_tm);
 	}
 
@@ -137,42 +137,42 @@ char* http_create_header(int status_code, char* server, time_t* last_modified, c
 
 
 	//Content-Range
-	if (status_code == HTTP_STATUS_PARTIAL_CONTENT)
+	if (http_request->response_status == HTTP_STATUS_PARTIAL_CONTENT)
 	{
-		if (range_end == 0)
+		if (http_request->range_end == 0)
 		{
-			range_end = file_size - 1;
+			http_request->range_end = http_request->file_size - 1;
 		}
-		sprintf(response + strlen(response), "Content-Range: bytes %u-%u/%d\n", range_begin, range_end, file_size);
+		sprintf(response + strlen(response), "Content-Range: bytes %u-%u/%d\n", http_request->range_begin, http_request->range_end, (int)http_request->file_size);
 	}
-	if (status_code == HTTP_STATUS_RANGE_NOT_SATISFIABLE)
+	if (http_request->response_status == HTTP_STATUS_RANGE_NOT_SATISFIABLE)
 	{
-		sprintf(response + strlen(response), "Content-Range: bytes */%d\n", file_size);
+		sprintf(response + strlen(response), "Content-Range: bytes */%d\n", (int)http_request->file_size);
 	}
 
 
 	//Content-Length
-	if (content_length > 0)
+	if (http_request->content_length > 0)
 	{
-		sprintf(response + strlen(response), "Content-Length: %d\n", content_length);
+		sprintf(response + strlen(response), "Content-Length: %d\n", (int)http_request->content_length);
 	}
 
 
 	//Content-Type
-	sprintf(response + strlen(response), "Content-Type: %s\n", content_type);
+	sprintf(response + strlen(response), "Content-Type: %s\n", http_request->content_type);
 
 
 	//Location
-	if (location != NULL && strlen(location) > 0)
+	if (http_request->location != NULL && strlen(http_request->location) > 0)
 	{
-		if (strlen(location)>(HTTP_MAX_HEADERSIZE - strlen(response) - 11 - 19 - 1))
+		if (strlen(http_request->location)>(HTTP_MAX_HEADERSIZE - strlen(response) - 11 - 19 - 1))
 		{
 			err_print("Location is to long for the defined header size!");
 			free(response);response = NULL;
 			return NULL;
 		}
 		//TODO evtl. encode url?
-		sprintf(response + strlen(response), "Location: %s\n", location);
+		sprintf(response + strlen(response), "Location: %s\n", http_request->location);
 	}
 
 
@@ -182,41 +182,43 @@ char* http_create_header(int status_code, char* server, time_t* last_modified, c
 }
 
 
-http_header_t http_parse_header(char * header)
+int http_parse_header(http_request_t *http_request)
 {
-	http_header_t header_struct;
-	header_struct.range_begin = 0;	//From byte 0
-	header_struct.range_end = 0;	//To the end of the file (0 => end of file)
-	header_struct.is_range_request = 0;
-	header_struct.method = HTTP_METHOD_UNKNOWN;
-	header_struct.url = NULL;
-	header_struct.host = NULL;
-	header_struct.if_modified_since = 0;
+
+	if (http_request->request_buffer == NULL)
+	{
+		err_print("Header is NULL!");
+		return -1;
+	}
+
+	//Set request time
+	http_request->request_time = time(NULL);
+
 
 	//Read HTTP method
 	for (int i = 0; i < HTTP_METHOD_LIST_SIZE-1 ; i++)
 	{
-		if (memcmp(header, http_method_list[i].name, strlen(http_method_list[i].name)) == 0)
+		if (memcmp(http_request->request_buffer, http_method_list[i].name, strlen(http_method_list[i].name)) == 0)
 		{
-			header_struct.method = http_method_list[i].method;
+			http_request->method = http_method_list[i].method;
 			break;
 		}
 	}
 
 
 	//Read Host
-	char* host = strstr(header,"\r\nHost: ");
+	char* host = strstr(http_request->request_buffer,"\r\nHost: ");
 	size_t host_size = 0;
 	if (host != NULL)
 	{
 		host += 8;
 		char* host_end = strstr(host,"\r\n");
 		host_size = host_end - host;
-		header_struct.host = calloc(host_size + 1, 1);//Set Null byte at the end of the string
-		if (header_struct.host != NULL)
+		http_request->host = calloc(host_size + 1, 1);//Set Null byte at the end of the string
+		if (http_request->host != NULL)
 		{
 			//memset(header_struct.host, 0, host_size + 1);
-			memcpy(header_struct.host, host, host_size);
+			memcpy(http_request->host, host, host_size);
 		}
 		else
 		{
@@ -227,22 +229,22 @@ http_header_t http_parse_header(char * header)
 
 
 	//Read URL
-	char* url = strstr(header," ") + 1;
+	char* url = strstr(http_request->request_buffer," ") + 1;
 	char* url_end = strstr(url," ");
 	size_t url_size = url_end - url;
-	header_struct.url = calloc(url_size + 1, 1);//Set Null byte at the end of the string
-	if (header_struct.url != NULL)
+	http_request->url = calloc(url_size + 1, 1);//Set Null byte at the end of the string
+	if (http_request->url != NULL)
 	{
-		memcpy(header_struct.url, url, url_size);
-		http_decode_url(header_struct.url, header_struct.url);
-		url_size = strlen(header_struct.url);
+		memcpy(http_request->url, url, url_size);
+		http_decode_url(http_request->url, http_request->url);
+		url_size = strlen(http_request->url);
 
 		//If is absolute path, remove host part
-		if (header_struct.host != NULL && url_size >= host_size)
+		if (http_request->host != NULL && url_size >= host_size)
 		{
-			if (memcmp(header_struct.url, header_struct.host, host_size) == 0)
+			if (memcmp(http_request->url, http_request->host, host_size) == 0)
 			{
-				memmove(header_struct.url, header_struct.url + host_size, url_size - host_size + 1);
+				memmove(http_request->url, http_request->url + host_size, url_size - host_size + 1);
 			}
 		}
 
@@ -255,7 +257,7 @@ http_header_t http_parse_header(char * header)
 
 
 	//Read Range:
-	char* range = strstr(header,"\r\nRange: bytes=");//Only bytes are accepted
+	char* range = strstr(http_request->request_buffer,"\r\nRange: bytes=");//Only bytes are accepted
 	if (range != NULL)
 	{
 		range += 15;
@@ -265,34 +267,117 @@ http_header_t http_parse_header(char * header)
 		{
 			if (range_hyphen != range)//Does not beginn with '-' (start range is set)
 			{
-				sscanf(range, "%u", &header_struct.range_begin);
+				sscanf(range, "%u", &(http_request->range_begin));
 			}
 			if ((range_hyphen+1) != range_end)//Does not end with '-' (end range is set)
 			{
-				sscanf(range_hyphen+1, "%u", &header_struct.range_end);
+				sscanf(range_hyphen+1, "%u", &(http_request->range_end));
 			}
 
-			header_struct.is_range_request = 1;
+			http_request->is_range_request = 1;
 		}
 	}
 
 
 	//If modified since
-	char* modified_since = strstr(header,"\r\nIf-Modified-Since: ");//Only bytes are accepted
+	char* modified_since = strstr(http_request->request_buffer, "\r\nIf-Modified-Since: ");//Only bytes are accepted
 	if (modified_since != NULL)
 	{
 		modified_since += 21;
 
 		struct tm my_tm;
-		strptime(modified_since, "%a, %d %b %Y %H:%M:%S GMT", &my_tm);
-		header_struct.if_modified_since = mktime(&my_tm);
-
-
+		memset(&my_tm,0,sizeof(my_tm)); //strptime does not fill everything... so we get an uninitalized memory problem with mktime... so just reset it first
+		if (strptime(modified_since, "%a, %d %b %Y %H:%M:%S GMT", &my_tm) != NULL)
+		{
+			http_request->if_modified_since = mktime(&my_tm);
+		}
 	}
 
 
-	return header_struct;
+	return 0;
 }
+
+http_request_t http_create_struct()
+{
+	http_request_t http_request;
+	//Input
+	http_request.request_buffer = NULL;
+	http_request.ip = NULL;
+	http_request.request_time = 0;
+	http_request.server = NULL;
+	http_request.sd = 0;
+	http_request.root_dir = NULL;
+
+	//Parsed data
+	http_request.method = HTTP_METHOD_UNKNOWN;
+	http_request.url = NULL;
+	http_request.range_begin = 0;
+	http_request.range_end = 0;
+	http_request.is_range_request = 0;
+	http_request.host = NULL;
+	http_request.if_modified_since = 0;
+
+    //Response
+	http_request.response_status = HTTP_STATUS_OK;
+	http_request.last_modified = 0;
+	http_request.content_type = "text/html";
+	http_request.location = NULL;
+	http_request.content_length = 0;
+	http_request.file_size = 0;
+	http_request.file_name = NULL;
+	http_request.response_buffer = NULL;
+
+	return http_request;
+}
+
+void http_free_struct(http_request_t *http_request)
+{
+	if (http_request->request_buffer != NULL)
+	{
+		free(http_request->request_buffer);
+		http_request->request_buffer = NULL;
+	}
+
+/*	if (http_request->ip != NULL)
+	{
+		free(http_request->ip);
+		http_request->ip = NULL;
+	}*/
+
+	if (http_request->url != NULL)
+	{
+		free(http_request->url);
+		http_request->url = NULL;
+	}
+
+	if (http_request->host != NULL)
+	{
+		free(http_request->host);
+		http_request->host = NULL;
+	}
+
+	if (http_request->location != NULL)
+	{
+		free(http_request->location);
+		http_request->location = NULL;
+	}
+
+	if (http_request->file_name != NULL)
+	{
+		free(http_request->file_name);
+		http_request->file_name = NULL;
+	}
+
+	if (http_request->response_buffer != NULL)
+	{
+		free(http_request->response_buffer);
+		http_request->response_buffer = NULL;
+	}
+
+}
+
+
+
 
 
 
