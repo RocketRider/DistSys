@@ -21,6 +21,7 @@ extern void set_verbosity_level(unsigned short level);
 extern int print_log(const char *format, ...);
 extern int print_debug(const char *format, ...);
 extern void print_http_header(const char *what, const char *response_str);
+extern void set_log_file(FILE *fd);
 
 #endif
 

@@ -200,6 +200,9 @@ open_logfile(prog_options_t *opt)
         printf("Note: logging is redirected to stdout.\n");
         opt->log_fd = stdout;
     } /* end if */
+
+
+    set_log_file(opt->log_fd);
 } /* end of open_logfile */
 
 

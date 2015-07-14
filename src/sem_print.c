@@ -21,10 +21,11 @@
 
 #define SEM_NAME                  "/tinysem"
 #define err_print(s)              fprintf(stderr, "ERROR: %s, %s:%d\n", (s), __FILE__, __LINE__)
-
+#define MAXS 1024
 
 static sem_t *log_sem = NULL;
 static unsigned short verbosity_level = 0;
+static FILE *log_fd = NULL;
 
 void
 init_logging_semaphore(void)
@@ -52,31 +53,53 @@ set_verbosity_level(unsigned short level)
 } /* end of set_verbosity_level */
 
 
+void set_log_file(FILE *fd)
+{
+	log_fd = fd;
+}
+
+
 int
 print_log(const char *format, ...)
 {
     int status;
     va_list args;
+    int pos;
+    char buf[MAXS];
 
     if (log_sem != NULL && sem_wait(log_sem) < 0) {
         err_print("semaphore wait");
     } /* end if */
 
-    printf("[%d] ", getpid());
 
-    va_start(args, format);
-    status = vprintf(format, args);
-    va_end(args);
+    if (log_fd == NULL)
+    {
+		printf("[%d] ", getpid());
+		va_start(args, format);
+		status = vprintf(format, args);
+		va_end(args);
+    }
+    else
+    {
+        pos = snprintf(buf, sizeof(buf), "[%d] ", getpid());
+
+        va_start(args, format);
+        vsnprintf(buf+pos, sizeof(buf)-pos, format, args);
+        va_end(args);
+        status = fprintf(log_fd, "%s", buf);
+    }
+
 
     if (log_sem != NULL && sem_post(log_sem) < 0) {
         err_print("semaphore post");
     } /* end if */
 
+
     return status;
 } /* end of print_log */
 
 
-#define MAXS 1024
+
 int
 print_debug(const char *format, ...)
 {
