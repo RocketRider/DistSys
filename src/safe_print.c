@@ -14,8 +14,14 @@
 #include <string.h>
 #include <stdarg.h>
 
+
 /*
- * safe_printf - async-signal-safe wrapper for printf
+ * Name: safe_printf
+ * Zweck: async-signal-safe wrapper for printf
+ * In-Parameter: const char* format, ... (Parameter wie bei printf)
+ * Out-Parameter: -
+ * Globale Variablen: -
+ * Rückgabewert: int Anzahl geschriebener Zeichen
  */
 #define MAXS 1024
 int

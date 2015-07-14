@@ -86,7 +86,14 @@ int http_decode_url(const char *s, char *dec)
 }
 
 
-
+/*
+ * Name: http_create_header
+ * Zweck: Erstellen des Http Response Headers zu einem Http Request
+ * In-Parameter: http_request_t *http_request (Http Request)
+ * Out-Parameter: -
+ * Globale Variablen: -
+ * Rückgabewert: char* (Http Response Header)
+ */
 char* http_create_header(http_request_t *http_request)
 {
 	char* response = malloc(HTTP_MAX_HEADERSIZE);
@@ -185,6 +192,14 @@ char* http_create_header(http_request_t *http_request)
 }
 
 
+/*
+ * Name: http_parse_header
+ * Zweck: Parsen des Http Request Headers
+ * In-Parameter: http_request_t *http_request (Http Request)
+ * Out-Parameter: -
+ * Globale Variablen: -
+ * Rückgabewert: int Statuscode (0 = ok, -1 = Fehler)
+ */
 int http_parse_header(http_request_t *http_request)
 {
 
@@ -300,6 +315,15 @@ int http_parse_header(http_request_t *http_request)
 	return 0;
 }
 
+
+/*
+ * Name: http_create_struct
+ * Zweck: Erstellen einer neuen http_request_t Struktur mit Initialwerten
+ * In-Parameter: -
+ * Out-Parameter: -
+ * Globale Variablen: -
+ * Rückgabewert: http_request_t (Struktur für Http Request)
+ */
 http_request_t http_create_struct()
 {
 	http_request_t http_request;
@@ -333,6 +357,15 @@ http_request_t http_create_struct()
 	return http_request;
 }
 
+
+/*
+ * Name: http_free_struct
+ * Zweck: Freigeben einer http_request_t Struktur
+ * In-Parameter: http_request_t *http_request (Http Request Struktur)
+ * Out-Parameter: -
+ * Globale Variablen: -
+ * Rückgabewert: -	
+ */
 void http_free_struct(http_request_t *http_request)
 {
 	if (http_request->request_buffer != NULL)

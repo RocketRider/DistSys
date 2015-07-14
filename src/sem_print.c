@@ -27,6 +27,15 @@ static sem_t *log_sem = NULL;
 static unsigned short verbosity_level = 0;
 static FILE *log_fd = NULL;
 
+
+/*
+ * Name: init_loging_semaphore
+ * Zweck: Initialisieren der Logging Semaphore
+ * In-Parameter: -
+ * Out-Parameter: -
+ * Globale Variablen: sem_t* log_sem
+ * Rückgabewert: -
+ */
 void
 init_logging_semaphore(void)
 {
@@ -36,6 +45,15 @@ init_logging_semaphore(void)
     } /* end if */
 } /* end of init_logging_semaphore */
 
+
+/*
+ * Name: free_loging_semaphore
+ * Zweck: Freigeben der Logging Semaphore
+ * In-Parameter: -
+ * Out-Parameter: -
+ * Globale Variablen: sem_t* log_sem
+ * Rückgabewert: -
+ */
 void
 free_logging_semaphore(void)
 {
@@ -46,6 +64,14 @@ free_logging_semaphore(void)
 } /* end of free_logging_semaphore */
 
 
+/*
+ * Name: set_verbosity_level
+ * Zweck: Setzen der Detailstufe der Ausgabe
+ * In-Parameter: unsigned short level (Detailstufe der Ausgabe)
+ * Out-Parameter: -
+ * Globale Variablen: unsigned short verbosity_level
+ * Rückgabewert: -
+ */
 void
 set_verbosity_level(unsigned short level)
 {
@@ -53,12 +79,29 @@ set_verbosity_level(unsigned short level)
 } /* end of set_verbosity_level */
 
 
+/*
+ * Name: set_log_file
+ * Zweck: Setzen der Log-Datei
+ * In-Parameter: FILE *fd (Filedeskriptor der Logdatei)
+ * Out-Parameter: -
+ * Globale Variablen: FILE *log_fd
+ * Rückgabewert: -
+ */
 void set_log_file(FILE *fd)
 {
 	log_fd = fd;
 }
 
 
+
+/*
+ * Name: print_log
+ * Zweck: Ausgeben eines Log-Textes
+ * In-Parameter: const char *format, ... (Parameter wie printf)
+ * Out-Parameter: -
+ * Globale Variablen: -
+ * Rückgabewert: int (Rückgabewert aus fprintf)
+ */
 int
 print_log(const char *format, ...)
 {
@@ -99,7 +142,14 @@ print_log(const char *format, ...)
 } /* end of print_log */
 
 
-
+/*
+ * Name: print_debug
+ * Zweck: Ausgeben eines Debug-Textes
+ * In-Parameter: const char *format, ... (Parameter wie printf)
+ * Out-Parameter: -
+ * Globale Variablen: -
+ * Rückgabewert: int (Rückgabewert aus fprintf)
+ */
 int
 print_debug(const char *format, ...)
 {
@@ -131,9 +181,17 @@ print_debug(const char *format, ...)
 } /* end of print_debug */
 
 
+/* TODO */
 
-
-
+/*
+ * Name: print_http_header
+ * Zweck: Ausgeben des Status für einen Http Request
+ * In-Parameter: const char *what
+		 const char *response_str
+ * Out-Parameter: -
+ * Globale Variablen: -
+ * Rückgabewert: -
+ */
 void
 print_http_header(const char *what, const char *response_str)
 {

@@ -52,9 +52,14 @@ static volatile sig_atomic_t server_running = false;
 
 #define IS_ROOT_DIR(mode)   (S_ISDIR(mode) && ((S_IROTH || S_IXOTH) & (mode)))
 
-//
-// TODO: Include your function header here
-//
+/*
+ * Name: sig_handler
+ * Zweck: Signalhandler, um auf Signale zu reagieren
+ * In-Parameter: int sig (Signal, auf das reagiert werden soll)
+ * Out-Parameter: -
+ * Globale Variablen: -
+ * Rückgabewert: -
+ */
 static void
 sig_handler(int sig)
 {
@@ -71,9 +76,14 @@ sig_handler(int sig)
 } /* end of sig_handler */
 
 
-//
-// TODO: Include your function header here
-//
+/*
+ * Name: print_usage
+ * Zweck: Hilfeausgabe für Startoptionen des Servers
+ * In-Parameter: const char *progname (Name des Programms)
+ * Out-Parameter: -
+ * Globale Variablen: -
+ * Rückgabewert: -
+ */
 static void
 print_usage(const char *progname)
 {
@@ -90,9 +100,15 @@ print_usage(const char *progname)
 } /* end of print_usage */
 
 
-//
-// TODO: Include your function header here
-//
+/*
+ * Name: get_options
+ * Zweck: Einlesen und Setzen der Programmoptionen
+ * In-Parameter: int argc
+		 char *argv[] (Startparameter)
+ * Out-Parameter: prog_options_t *opt (Struktur mit Programmoptionen)
+ * Globale Variablen: -
+ * Rückgabewert: int Statuscode (0, bei Fehler negativ)
+ */
 static int
 get_options(int argc, char *argv[], prog_options_t *opt)
 {
@@ -192,6 +208,14 @@ get_options(int argc, char *argv[], prog_options_t *opt)
 } /* end of get_options */
 
 
+/*
+ * Name: open_logfile
+ * Zweck: Öffnen der Logdatei
+ * In-Parameter: prog_options_t *opt (Struktur mit Programmoptionen)
+ * Out-Parameter: -
+ * Globale Variablen: -
+ * Rückgabewert: -
+ */
 static void
 open_logfile(prog_options_t *opt)
 {
@@ -214,6 +238,14 @@ open_logfile(prog_options_t *opt)
 } /* end of open_logfile */
 
 
+/*
+ * Name: check_root_dir
+ * Zweck: Prüfen, ob Wurzelverzeichnis vorhanden und lesbar
+ * In-Parameter: prog_options_t *opt (Struktur mit Programmoptionen)
+ * Out-Parameter: -
+ * Globale Variablen: -
+ * Rückgabewert: -
+ */
 static void
 check_root_dir(prog_options_t *opt)
 {
@@ -231,6 +263,14 @@ check_root_dir(prog_options_t *opt)
 } /* end of check_root_dir */
 
 
+/*
+ * Name: install_signal_handlers
+ * Zweck: Installiert die Signalhandler für die Signale, auf die der Server reagiert
+ * In-Parameter: -
+ * Out-Parameter: -
+ * Globale Variablen: -
+ * Rückgabewert: -
+ */
 static void
 install_signal_handlers(void)
 {
@@ -257,6 +297,15 @@ install_signal_handlers(void)
 } /* end of install_signal_handlers */
 
 
+/*
+ * Name: main
+ * Zweck: Einstiegspunkt des Programms
+ * In-Parameter: int argc
+		 char *argv[] (Startparameter, Übergane aus Konsole)
+ * Out-Parameter: -
+ * Globale Variablen: -
+ * Rückgabewert: int Statuscode (bei Fehler negativ)
+ */
 int
 main(int argc, char *argv[])
 {

@@ -26,6 +26,14 @@ static http_content_type_entry_t http_content_type_list[] = {
 };
 
 
+/*
+ * Name: get_http_content_type
+ * Zweck: Auflösen des Http Content Type anhand der Dateiendung
+ * In-Parameter: char *filename (Dateiname)
+ * Out-Parameter: -
+ * Globale Variablen: -
+ * Rückgabewert: http_content_type_t (Content Type der Datei)
+ */
 http_content_type_t
 get_http_content_type(const char *filename)
 {
@@ -51,6 +59,14 @@ get_http_content_type(const char *filename)
 } /* end of get_http_content_type */
 
 
+/*
+ * Name: get_http_content_type_str
+ * Zweck: Umwandeln des http_content_type_t in eine Zeichenkette
+ * In-Parameter: http_content_type_t type (Http Content Type)
+ * Out-Parameter: -
+ * Globale Variablen: -
+ * Rückgabewert: char* (Http Content Type als c_string)
+ */
 char *
 get_http_content_type_str(const http_content_type_t type)
 {

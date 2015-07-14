@@ -43,7 +43,14 @@
 #include "../libsockets/socket_info.h"
 
 
-
+/*
+ * Name: server_send_response_header
+ * Zweck: Sendet Http Response Header
+ * In-Parameter: http_request_t *request (Request inklusiv Response Header)
+ * Out-Parameter: -
+ * Globale Variablen: -
+ * Rückgabewert: int Statuscode (Anzahl geschriebener Zeichen, bei Fehler negativ)
+ */
 int static server_send_response_header(http_request_t *request)
 {
 	int ret = -1;
@@ -78,6 +85,14 @@ int static server_send_response_header(http_request_t *request)
 }
 
 
+/*
+ * Name: server_answer_error
+ * Zweck: Sendet Http Error Response
+ * In-Parameter: http_request_t *request (Request der mit Fehler beantwortet wird)
+ * Out-Parameter: -
+ * Globale Variablen: -
+ * Rückgabewert: int Statuscode (Anzahl geschriebener Zeichen, bei Fehler negativ)
+ */
 int static server_answer_error(http_request_t *request) {
 	int ret;
 	char* html = "";
@@ -125,6 +140,14 @@ int static server_answer_error(http_request_t *request) {
 }
 
 
+/*
+ * Name: server_execute_cgi
+ * Zweck: Ausführen einer CGI Anfrage
+ * In-Parameter: http_request_t *request (erhaltener Http Request)
+ * Out-Parameter: -
+ * Globale Variablen: -
+ * Rückgabewert: int Statuscode (Anzahl geschriebener Zeichen, bei Fehler negativ)
+ */
 int static server_execute_cgi(http_request_t *request) //'Is executable' is already checked!
 {
 	request->response_buffer = malloc(HTTP_MAX_HEADERSIZE);
@@ -166,7 +189,14 @@ int static server_execute_cgi(http_request_t *request) //'Is executable' is alre
 }
 
 
-
+/*
+ * Name: server_answer
+ * Zweck: Erzeugen und Senden der Http Response des Servers
+ * In-Parameter: http_request_t *request (erhaltener Http Request)
+ * Out-Parameter: -
+ * Globale Variablen: -
+ * Rückgabewert: int Statuscode (Anzahl geschriebener Zeichen, bei Fehler negativ)
+ */
 int static server_answer(http_request_t *request) {
 	int ret;
 
@@ -427,7 +457,14 @@ int static server_answer(http_request_t *request) {
 }
 
 
-
+/*
+ * Name: server_handle_client
+ * Zweck: Abarbeiten der Requests eines Clients
+ * In-Parameter: http_request_t *request (erhaltener Http Request)
+ * Out-Parameter: -
+ * Globale Variablen: -
+ * Rückgabewert: int Statuscode (bei Fehler negativ)
+ */
 int server_handle_client(http_request_t *http_request) {
 	int ret = 0;
 	//char buf[HTTP_MAX_HEADERSIZE] = "";
@@ -481,9 +518,15 @@ int server_handle_client(http_request_t *http_request) {
 }
 
 
-//Ret: 0 => Ok
-//		-1 => Error
-//		1 parent, accept next
+/*
+ * Name: server_accept_clients
+ * Zweck: Nimmt Client-Verbindungen an und führt fork aus
+ * In-Parameter: int sd (Socketdeskriptor)
+		 char *root_dir (Pfad des Wurzelverzeichnis)
+ * Out-Parameter: -
+ * Globale Variablen: -
+ * Rückgabewert: int Statuscode (0=ok, 1=parent(accept next), -1=Fehler)
+ */
 int server_accept_clients(int sd, char* root_dir) {
 	int retcode = 0, newsd; //new socket descriptor
 	struct sockaddr_in6 from_client;
@@ -531,7 +574,14 @@ int server_accept_clients(int sd, char* root_dir) {
 }
 
 
-
+/*
+ * Name: server_start
+ * Zweck: Starten des Servers
+ * In-Parameter: int port
+ * Out-Parameter: -
+ * Globale Variablen: -
+ * Rückgabewert: int Socketdeskriptor des Servers
+ */
 int server_start(int port) {
 	int sd;
 
