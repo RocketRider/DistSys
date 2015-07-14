@@ -78,7 +78,15 @@ static void
 print_usage(const char *progname)
 {
   fprintf(stderr, "Usage: %s options\n", progname);
-  // TODO: Print the program options
+
+  fprintf(stderr, "-d dir\n%s\n\n", "Definiert die Wurzel des Teilbaums, innerhalb dessen das Programm eine Ressource entsprechend der angefragten URI lädt.");
+
+  fprintf(stderr, "-f file\n%s\n\n", "Protokolliert sämtliche Transaktionen in die Datei file. Wird als Dateiname ''–' verwendet oder die Option nicht angegeben, so ist für die Ausgabe die Standardausgabe (stdout) zu verwenden.");
+
+  fprintf(stderr, "-p port\n%s\n\n", "Definiert den lokalen Port, auf dem der Server ankommende HTTP Verbindungen entgegen nimmt.");
+
+  fprintf(stderr, "-h\n%s\n\n", "Gibt eine Übersicht der gültigen Programmparameter sowie Gruppe, Namen und Kurs der Programmautoren. Diese Meldung soll zusammen mit einer Fehlermeldung auch ausgegeben werden, wenn keine oder falsche Programmparameter an- gegeben wurden.");
+
 } /* end of print_usage */
 
 
@@ -133,7 +141,7 @@ get_options(int argc, char *argv[], prog_options_t *opt)
             { NULL,      0, 0, 0 }
         };
 
-        c = getopt_long(argc, argv, "f:p:d:v", long_options, &option_index);
+        c = getopt_long(argc, argv, "f:p:d:vh", long_options, &option_index);
         if (c == -1) break;
 
         switch(c) {
@@ -153,7 +161,7 @@ get_options(int argc, char *argv[], prog_options_t *opt)
                     fprintf(stderr, "Cannot resolve service '%s': %s\n", optarg, gai_strerror(err));
                     return EXIT_FAILURE;
                 } /* end if */
-                opt->server_port = get_port_from_name((char *)optarg);//TODO get out of opt->server_addr
+                opt->server_port = get_port_from_name((char *)optarg);
                 break;
             case 'd':
                 // 'optarg contains root directory */

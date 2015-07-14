@@ -30,7 +30,6 @@
 "\r\n"
 
 
-//TODO ADD NEW URL
 #define HTML_301 \
 "<!DOCTYPE html PUBLIC '-//IETF//DTD HTML 2.0//EN'>\n"\
 "<HTML>\n"\
