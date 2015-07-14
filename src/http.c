@@ -171,7 +171,8 @@ char* http_create_header(http_request_t *http_request)
 			free(response);response = NULL;
 			return NULL;
 		}
-		//TODO evtl. encode url?
+
+		//TODO: URL should be encoded...
 		sprintf(response + strlen(response), "Location: %s\n", http_request->location);
 	}
 

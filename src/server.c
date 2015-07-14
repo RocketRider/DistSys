@@ -44,19 +44,34 @@
 
 int static server_send_response_header(http_request_t *request)
 {
-	int ret;
+	int ret = -1;
 
-	size_t req_len = strstr(request->request_buffer, "\r\n") - request->request_buffer;
+	if (request->request_buffer != NULL && request->ip != NULL)
+	{
+		size_t req_len = strstr(request->request_buffer, "\r\n") - request->request_buffer;
 
-	char time[128] = "";
-	struct tm *my_tm = (struct tm*) calloc(sizeof(struct tm),1);
-	localtime_r(&(request->request_time), my_tm);
-	strftime(time, 128, "%d/%b/%Y:%H:%M:%S %z", my_tm);
-	free(my_tm);
+		char time[64] = "";
+		struct tm *my_tm = (struct tm*) calloc(sizeof(struct tm),1);
+		localtime_r(&(request->request_time), my_tm);
+		strftime(time, 64, "%d/%b/%Y:%H:%M:%S %z", my_tm);
+		free(my_tm);
 
-	print_log("%s - - %s \"%.*s\" %d %d\n",request->ip, time, req_len, request->request_buffer, request->response_status, request->content_length);
-	print_http_header("RESPONSE", request->response_buffer);
-	ret = write_to_socket(request->sd, request->response_buffer, strlen(request->response_buffer), SERV_WRITE_TIMEOUT);
+		print_log("%s - - %s \"%.*s\" %d %d\n",request->ip, time, req_len, request->request_buffer, request->response_status, request->content_length);
+	}
+	else
+	{
+		err_print("No request buffer received!");
+	}
+
+	if (request->response_buffer != NULL)
+	{
+		print_http_header("RESPONSE", request->response_buffer);
+		ret = write_to_socket(request->sd, request->response_buffer, strlen(request->response_buffer), SERV_WRITE_TIMEOUT);
+	}
+	else
+	{
+		err_print("No response buffer to send!");
+	}
 	return ret;
 }
 
@@ -64,6 +79,14 @@ int static server_send_response_header(http_request_t *request)
 int static server_answer_error(http_request_t *request) {
 	int ret;
 	char* html = "";
+
+	//If main code already generated a header, and then habbend a error, so we must free the old one first...
+	if (request->response_buffer != NULL)
+	{
+		free(request->response_buffer);
+		request->response_buffer = NULL;
+	}
+
 
 	//Status Code
 	int http_status_list_index = 0;
@@ -99,6 +122,7 @@ int static server_answer_error(http_request_t *request) {
 	return 0;
 }
 
+
 int static server_execute_cgi(http_request_t *request) //'Is executable' is already checked!
 {
 	request->response_buffer = malloc(HTTP_MAX_HEADERSIZE);
@@ -110,10 +134,12 @@ int static server_execute_cgi(http_request_t *request) //'Is executable' is alre
 	memcpy(request->response_buffer, "HTTP/1.1 ", 10);
 	sprintf(request->response_buffer + strlen(request->response_buffer), "%d %s\n", HTTP_STATUS_OK, "OK");
 
+
 	//Date
 	time_t t = time(NULL);
 	struct tm *my_tm = gmtime(&t);
 	strftime(request->response_buffer + strlen(request->response_buffer), HTTP_MAX_HEADERSIZE - strlen(request->response_buffer), "Date: %a, %d %b %Y %H:%M:%S GMT\n", my_tm);
+
 
 	//Server
 	sprintf(request->response_buffer + strlen(request->response_buffer), "Server: %s\n", SERV_NAME);
@@ -124,6 +150,7 @@ int static server_execute_cgi(http_request_t *request) //'Is executable' is alre
 		err_print("Failed to send response header!");
 		return -1;
 	}
+
 
 	int saved_stdout = dup(1);
 	dup2(request->sd, STDOUT_FILENO);
@@ -140,6 +167,24 @@ int static server_execute_cgi(http_request_t *request) //'Is executable' is alre
 
 int static server_answer(http_request_t *request) {
 	int ret;
+
+	//If these buffers are already used, we need to free the memory first...
+	if (request->file_name != NULL)
+	{
+		free (request->file_name);
+		request->file_name = NULL;
+	}
+	if (request->location != NULL)
+	{
+		free (request->location);
+		request->location = NULL;
+	}
+	if (request->response_buffer != NULL)
+	{
+		free(request->response_buffer);
+		request->response_buffer = NULL;
+	}
+
 
 	//Check http method
 	if (request->method == HTTP_METHOD_NOT_IMPLEMENTED
@@ -383,51 +428,57 @@ int static server_answer(http_request_t *request) {
 int server_handle_client(http_request_t *http_request) {
 	//char buf[HTTP_MAX_HEADERSIZE] = "";
 	char* buf = calloc(HTTP_MAX_HEADERSIZE, 1);
-	int cc = 0; //char count
-	struct socket_info info;
-	int ret;
+	if (buf != NULL)
+	{
+		int cc = 0; //char count
+		struct socket_info info;
+		int ret;
 
 
-	get_socket_name(http_request->sd, &info);
+		get_socket_name(http_request->sd, &info);
 
-	clock_t t1, t2; //Make sure the max timeout is not more then 2x SERV_READ_TIMEOUT
-	float diff;
-	t1 = clock();
-	do {
-		ret = read_from_socket(http_request->sd, buf + cc, HTTP_MAX_HEADERSIZE - cc,
-				SERV_READ_TIMEOUT);
-		if (ret > 0)
-		{
-			cc += ret;
+		clock_t t1, t2; //Make sure the max timeout is not more then 2x SERV_READ_TIMEOUT
+		float diff;
+		t1 = clock();
+		do {
+			ret = read_from_socket(http_request->sd, buf + cc, HTTP_MAX_HEADERSIZE - cc,
+					SERV_READ_TIMEOUT);
+			if (ret > 0)
+			{
+				cc += ret;
+			}
+			t2 = clock();
+			diff = (((float) t2 - (float) t1) / CLOCKS_PER_SEC);
+		} while (ret >= 0 && strstr(buf, "\r\n\r\n") == NULL
+				&& cc < HTTP_MAX_HEADERSIZE && diff < SERV_READ_TIMEOUT);
+
+
+		if (ret < 0 || cc <= 0) {
+			print_debug("Receiving request failed!\n");
+			http_request->response_status = HTTP_STATUS_BAD_REQUEST;
+			server_answer_error(http_request);
+			free(buf);
+			buf = NULL;
+		} else {
+			print_http_header("REQUEST", buf);
+			http_request->request_buffer = buf; //buffer will be fread from http_free_struct
+			http_parse_header(http_request);
+			ret = server_answer(http_request);
 		}
-		t2 = clock();
-		diff = (((float) t2 - (float) t1) / CLOCKS_PER_SEC);
-	} while (ret >= 0 && strstr(buf, "\r\n\r\n") == NULL
-			&& cc < HTTP_MAX_HEADERSIZE && diff < SERV_READ_TIMEOUT);
 
-
-	if (ret < 0 || cc <= 0) {
-		print_debug("Receiving request failed!\n");
-		http_request->response_status = HTTP_STATUS_BAD_REQUEST;
-		server_answer_error(http_request);
-		free(buf);
-		buf = NULL;
-	} else {
-		print_http_header("REQUEST", buf);
-		http_request->request_buffer = buf;
-		http_parse_header(http_request);
-		ret = server_answer(http_request);
+		close(http_request->sd);
+		return http_request->sd;
 	}
 
-	close(http_request->sd);
-	return http_request->sd;
+	err_print("Failed to allocate memory!");
+	return -1;
 }
 
 
 
 int server_accept_clients(int sd, char* root_dir) {
 	int retcode = 0, newsd; //new socket descriptor
-	struct sockaddr_in from_client;
+	struct sockaddr_in6 from_client;
 	socklen_t from_client_len = 0;
 
 
@@ -451,7 +502,8 @@ int server_accept_clients(int sd, char* root_dir) {
 			http_request_t http_request = http_create_struct();
 
 			struct socket_info info;
-			get_socket_name(newsd, &info);
+			//get_socket_name(newsd, &info);
+			get_socket_info(from_client, &info);
 			http_request.ip = info.addr;
 
 			http_request.server = SERV_NAME;
