@@ -3,7 +3,9 @@
  *
  * Vorlesung Verteilte Systeme
  *
- * Author:  Ralf Reutemann
+ * Authoren:  Ralf Reutemann (person in charge)
+ * 			  Michael Möbius
+ * 			  Maximilian Schmitz
  *
  *===================================================================*/
 

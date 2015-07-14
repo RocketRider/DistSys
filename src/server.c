@@ -3,7 +3,9 @@
  *
  * Vorlesung Verteilte Systeme
  *
- * Author:  Ralf Reutemann
+ * Authoren:  Ralf Reutemann
+ * 			  Michael Möbius (person in charge)
+ * 			  Maximilian Schmitz
  *
  *===================================================================*/
 
@@ -219,7 +221,7 @@ int static server_answer(http_request_t *request) {
 			request->response_status = HTTP_STATUS_NOT_FOUND;
 			server_answer_error(request);
 		}
-		return -1;
+		return 0;
 	}
 
 
@@ -239,6 +241,7 @@ int static server_answer(http_request_t *request) {
 					strcat(request->location, "/");
 					request->response_status = HTTP_STATUS_MOVED_PERMANENTLY;
 					server_answer_error(request);
+					return 0;
 				}
 				else
 				{
@@ -288,7 +291,7 @@ int static server_answer(http_request_t *request) {
 			print_debug("CGI script is not executable\n");
 			request->response_status = HTTP_STATUS_FORBIDDEN;
 			server_answer_error(request);
-			return -1;
+			return 0;
 		}
 	}
 
@@ -304,7 +307,7 @@ int static server_answer(http_request_t *request) {
 		{
 			request->response_status = HTTP_STATUS_NOT_MODIFIED;
 			server_answer_error(request);
-			return -1;
+			return 0;
 		}
 	}
 
@@ -426,13 +429,13 @@ int static server_answer(http_request_t *request) {
 
 
 int server_handle_client(http_request_t *http_request) {
+	int ret = 0;
 	//char buf[HTTP_MAX_HEADERSIZE] = "";
 	char* buf = calloc(HTTP_MAX_HEADERSIZE, 1);
 	if (buf != NULL)
 	{
 		int cc = 0; //char count
 		struct socket_info info;
-		int ret;
 
 
 		get_socket_name(http_request->sd, &info);
@@ -459,6 +462,7 @@ int server_handle_client(http_request_t *http_request) {
 			server_answer_error(http_request);
 			free(buf);
 			buf = NULL;
+			ret = -1;
 		} else {
 			print_http_header("REQUEST", buf);
 			http_request->request_buffer = buf; //buffer will be fread from http_free_struct
@@ -467,15 +471,19 @@ int server_handle_client(http_request_t *http_request) {
 		}
 
 		close(http_request->sd);
-		return http_request->sd;
 	}
-
-	err_print("Failed to allocate memory!");
-	return -1;
+	else
+	{
+		err_print("Failed to allocate memory!");
+		ret = -1;
+	}
+	return ret;
 }
 
 
-
+//Ret: 0 => Ok
+//		-1 => Error
+//		1 parent, accept next
 int server_accept_clients(int sd, char* root_dir) {
 	int retcode = 0, newsd; //new socket descriptor
 	struct sockaddr_in6 from_client;
@@ -488,8 +496,8 @@ int server_accept_clients(int sd, char* root_dir) {
 	print_debug("New client\n");
 	if (newsd < 0) //Server Problem
 	{
-		err_print("Failed to accept client!");
-		retcode = newsd;
+		print_debug("Failed to accept client! / Server gets shut down... \n");
+		retcode = 0;
 	} else {
 		int pid = -1;
 		if ((pid = fork()) < 0) {
@@ -509,12 +517,12 @@ int server_accept_clients(int sd, char* root_dir) {
 			http_request.server = SERV_NAME;
 			http_request.sd = newsd;
 			http_request.root_dir = root_dir;
-			server_handle_client(&http_request);
+			retcode = server_handle_client(&http_request);
 			http_free_struct(&http_request);
-			retcode = 1;
 		} else /* parent process */
 		{
 			close(newsd);
+			retcode = 1;
 		}
 	}
 

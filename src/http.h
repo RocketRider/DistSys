@@ -3,10 +3,11 @@
  *
  * Vorlesung Verteilte Systeme
  *
- * Author:  Ralf Reutemann
+ * Authoren:  Ralf Reutemann
+ * 			  Michael Möbius
+ * 			  Maximilian Schmitz (person in charge)
  *
  *===================================================================*/
-
 
 
 #ifndef _HTTP_H

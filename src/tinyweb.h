@@ -1,3 +1,13 @@
+/*===================================================================
+ * DHBW Ravensburg - Campus Friedrichshafen
+ *
+ * Vorlesung Verteilte Systeme
+ *
+ * Authoren:  Ralf Reutemann (person in charge)
+ * 			  Michael Möbius
+ * 			  Maximilian Schmitz
+ *
+ *===================================================================*/
 //
 // TODO: Include your module header here
 //

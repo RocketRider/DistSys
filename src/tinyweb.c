@@ -3,7 +3,9 @@
  *
  * Vorlesung Verteilte Systeme
  *
- * Author:  Ralf Reutemann
+ * Authoren:  Ralf Reutemann (person in charge)
+ * 			  Michael Möbius
+ * 			  Maximilian Schmitz
  *
  *===================================================================*/
 //
@@ -277,12 +279,31 @@ main(int argc, char *argv[])
     sd = server_start(my_opt.server_port);
     if (sd > 0 )
     {
-		while(server_running && ret == 0) {
+    	ret = 1;
+		while(server_running && ret == 1) {
 			ret = server_accept_clients(sd, my_opt.root_dir);
+
+			int status=0;
+			int pid = 1;
+			while (pid >0)
+			{
+				pid = waitpid(-1, &status, WNOHANG);
+				if (pid > 0)
+				{
+					print_debug("Child[%d] exited with %d\n",pid, WEXITSTATUS(status));
+				}
+			}
+
+
 		}
 	}
+    if (ret == -1)
+    {
+    	retcode = EXIT_FAILURE;
+    }
     
-    print_debug("Good Bye...\n");
+    print_debug("Good Bye[%d]...\n", retcode);
+
     
 
     //Free options

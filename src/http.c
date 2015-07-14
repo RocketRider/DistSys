@@ -3,7 +3,9 @@
  *
  * Vorlesung Verteilte Systeme
  *
- * Author:  Ralf Reutemann
+ * Authoren:  Ralf Reutemann
+ * 			  Michael Möbius
+ * 			  Maximilian Schmitz (person in charge)
  *
  *===================================================================*/
 #define _XOPEN_SOURCE 700 /* needed for strptime */
@@ -75,11 +77,11 @@ int http_decode_url(const char *s, char *dec)
 		{
 			return -1;
 		}
-
-		if (dec) *o = c;
+		if (dec)
+		{
+			*o = c;
+		}
 	}
-
-
 	return o - dec;
 }
 
