@@ -2,7 +2,7 @@
 Autoren: Ralf Reutemann, Michael Möbius, Maximilian Schmitz
 
 Testergebnisse:
--request_log.txt (Request und Response Header)
+-Test_log.txt Beschreibung und Protokolle (Request und Response Header) der Tests
 -testlog.tar.gz
 
 Run-Skripte:

@@ -1,0 +1,2012 @@
+Alle Tests werden ohne Probleme durchgeführt und bestanden!
+Auch das parallele Ausführen der Tests wird problemlos bestanden.
+
+t/00date.t ...... ok   
+t/00server.t .... ok   
+t/00status.t .... ok   
+t/01methods.t ... ok   
+t/02basic.t ..... ok     
+t/02mime.t ...... ok     
+t/02zero.t ...... ok   
+t/03moved.t ..... ok   
+t/04modsince.t .. ok   
+t/04range.t ..... ok     
+t/05cgi.t ....... ok   
+All tests successful.
+Files=11, Tests=86,  1 wallclock secs ( 0.06 usr  0.01 sys +  0.95 cusr  0.14 csys =  1.16 CPU)
+Result: PASS
+
+
+Der Test "basic" wurde um zwei Anfragen mit Leerzeichen erweitert um das dekodieren der URL zu testen:
+[ { method => 'GET',  url => "/index copy.html", status => 200 } ],
+[ { method => 'HEAD', url => "/index copy.html", status => 200 } ],
+
+Der Test "mime" wurde um zwei Test mit 'zwei endungen' erweitert um die Robustheit zu zeigen:
+[ { method => 'HEAD', url => "/images/computerhead1.html.gif", status => 200 } ],
+[ { method => 'GET',  url => "/images/computerhead1.html.gif", status => 200 } ],
+
+Anbei sehen Sie die verbose Ausgabe des Servers. Diese beinhaltet die Request und Response Header:
+
+
+
+
+
+
+[4411] New client
+[4415] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4415] REQUEST HEADER (155 Bytes):
+GET /index.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/00date.t
+
+[4415] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "GET /index.html HTTP/1.1" 200 7582
+[4415] RESPONSE HEADER (198 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 7582
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4415] exited with 0
+[4416] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4416] REQUEST HEADER (160 Bytes):
+GET /css/default.css HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/00date.t
+
+[4416] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "GET /css/default.css HTTP/1.1" 200 890
+[4416] RESPONSE HEADER (196 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 890
+Content-Type: text/css
+Connection: close
+
+[4411] New client
+[4411] Child[4416] exited with 0
+[4417] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4417] REQUEST HEADER (159 Bytes):
+GET /blablabla.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/00date.t
+
+[4417] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "GET /blablabla.html HTTP/1.1" 404 248
+[4417] RESPONSE HEADER (159 Bytes):
+HTTP/1.1 404 Not Found
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Accept-Ranges: bytes
+Content-Length: 248
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4417] exited with 0
+[4418] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4418] REQUEST HEADER (157 Bytes):
+GET /css/xyz.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/00date.t
+
+[4418] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "GET /css/xyz.html HTTP/1.1" 404 248
+[4418] RESPONSE HEADER (159 Bytes):
+HTTP/1.1 404 Not Found
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Accept-Ranges: bytes
+Content-Length: 248
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4418] exited with 0
+[4419] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4419] REQUEST HEADER (156 Bytes):
+HEAD /index.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/00date.t
+
+[4419] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "HEAD /index.html HTTP/1.1" 200 7582
+[4419] RESPONSE HEADER (198 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 7582
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4419] exited with 0
+[4420] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4420] REQUEST HEADER (161 Bytes):
+HEAD /css/default.css HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/00date.t
+
+[4420] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "HEAD /css/default.css HTTP/1.1" 200 890
+[4420] RESPONSE HEADER (196 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 890
+Content-Type: text/css
+Connection: close
+
+[4411] New client
+[4411] Child[4420] exited with 0
+[4421] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4421] REQUEST HEADER (160 Bytes):
+HEAD /blablabla.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/00date.t
+
+[4421] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "HEAD /blablabla.html HTTP/1.1" 404 248
+[4421] RESPONSE HEADER (159 Bytes):
+HTTP/1.1 404 Not Found
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Accept-Ranges: bytes
+Content-Length: 248
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4421] exited with 0
+[4422] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4422] REQUEST HEADER (158 Bytes):
+HEAD /css/xyz.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/00date.t
+
+[4422] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "HEAD /css/xyz.html HTTP/1.1" 404 248
+[4422] RESPONSE HEADER (159 Bytes):
+HTTP/1.1 404 Not Found
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Accept-Ranges: bytes
+Content-Length: 248
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4422] exited with 0
+[4424] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4424] REQUEST HEADER (157 Bytes):
+GET /index.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/00server.t
+
+[4424] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "GET /index.html HTTP/1.1" 200 7582
+[4424] RESPONSE HEADER (198 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 7582
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4424] exited with 0
+[4425] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4425] REQUEST HEADER (162 Bytes):
+GET /css/default.css HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/00server.t
+
+[4425] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "GET /css/default.css HTTP/1.1" 200 890
+[4425] RESPONSE HEADER (196 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 890
+Content-Type: text/css
+Connection: close
+
+[4411] New client
+[4411] Child[4425] exited with 0
+[4426] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4426] REQUEST HEADER (161 Bytes):
+GET /blablabla.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/00server.t
+
+[4426] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "GET /blablabla.html HTTP/1.1" 404 248
+[4426] RESPONSE HEADER (159 Bytes):
+HTTP/1.1 404 Not Found
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Accept-Ranges: bytes
+Content-Length: 248
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4426] exited with 0
+[4427] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4427] REQUEST HEADER (159 Bytes):
+GET /css/xyz.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/00server.t
+
+[4427] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "GET /css/xyz.html HTTP/1.1" 404 248
+[4427] RESPONSE HEADER (159 Bytes):
+HTTP/1.1 404 Not Found
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Accept-Ranges: bytes
+Content-Length: 248
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4427] exited with 0
+[4428] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4428] REQUEST HEADER (158 Bytes):
+HEAD /index.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/00server.t
+
+[4428] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "HEAD /index.html HTTP/1.1" 200 7582
+[4428] RESPONSE HEADER (198 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 7582
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4428] exited with 0
+[4429] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4429] REQUEST HEADER (163 Bytes):
+HEAD /css/default.css HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/00server.t
+
+[4429] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "HEAD /css/default.css HTTP/1.1" 200 890
+[4429] RESPONSE HEADER (196 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 890
+Content-Type: text/css
+Connection: close
+
+[4411] New client
+[4411] Child[4429] exited with 0
+[4430] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4430] REQUEST HEADER (162 Bytes):
+HEAD /blablabla.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/00server.t
+
+[4430] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "HEAD /blablabla.html HTTP/1.1" 404 248
+[4430] RESPONSE HEADER (159 Bytes):
+HTTP/1.1 404 Not Found
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Accept-Ranges: bytes
+Content-Length: 248
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4430] exited with 0
+[4431] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4431] REQUEST HEADER (160 Bytes):
+HEAD /css/xyz.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/00server.t
+
+[4431] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "HEAD /css/xyz.html HTTP/1.1" 404 248
+[4431] RESPONSE HEADER (159 Bytes):
+HTTP/1.1 404 Not Found
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Accept-Ranges: bytes
+Content-Length: 248
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4431] exited with 0
+[4433] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4433] REQUEST HEADER (157 Bytes):
+GET /index.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/00status.t
+
+[4433] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "GET /index.html HTTP/1.1" 200 7582
+[4433] RESPONSE HEADER (198 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 7582
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4433] exited with 0
+[4434] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4434] REQUEST HEADER (162 Bytes):
+GET /css/default.css HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/00status.t
+
+[4434] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "GET /css/default.css HTTP/1.1" 200 890
+[4434] RESPONSE HEADER (196 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 890
+Content-Type: text/css
+Connection: close
+
+[4411] New client
+[4411] Child[4434] exited with 0
+[4435] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4435] REQUEST HEADER (161 Bytes):
+GET /blablabla.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/00status.t
+
+[4435] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "GET /blablabla.html HTTP/1.1" 404 248
+[4435] RESPONSE HEADER (159 Bytes):
+HTTP/1.1 404 Not Found
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Accept-Ranges: bytes
+Content-Length: 248
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4435] exited with 0
+[4436] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4436] REQUEST HEADER (159 Bytes):
+GET /css/xyz.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/00status.t
+
+[4436] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "GET /css/xyz.html HTTP/1.1" 404 248
+[4436] RESPONSE HEADER (159 Bytes):
+HTTP/1.1 404 Not Found
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Accept-Ranges: bytes
+Content-Length: 248
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4436] exited with 0
+[4437] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4437] REQUEST HEADER (158 Bytes):
+HEAD /index.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/00status.t
+
+[4437] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "HEAD /index.html HTTP/1.1" 200 7582
+[4437] RESPONSE HEADER (198 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 7582
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4437] exited with 0
+[4438] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4438] REQUEST HEADER (163 Bytes):
+HEAD /css/default.css HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/00status.t
+
+[4438] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "HEAD /css/default.css HTTP/1.1" 200 890
+[4438] RESPONSE HEADER (196 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 890
+Content-Type: text/css
+Connection: close
+
+[4411] New client
+[4411] Child[4438] exited with 0
+[4439] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4439] REQUEST HEADER (162 Bytes):
+HEAD /blablabla.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/00status.t
+
+[4439] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "HEAD /blablabla.html HTTP/1.1" 404 248
+[4439] RESPONSE HEADER (159 Bytes):
+HTTP/1.1 404 Not Found
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Accept-Ranges: bytes
+Content-Length: 248
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4439] exited with 0
+[4440] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4440] REQUEST HEADER (160 Bytes):
+HEAD /css/xyz.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/00status.t
+
+[4440] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "HEAD /css/xyz.html HTTP/1.1" 404 248
+[4440] RESPONSE HEADER (159 Bytes):
+HTTP/1.1 404 Not Found
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Accept-Ranges: bytes
+Content-Length: 248
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4440] exited with 0
+[4442] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4442] REQUEST HEADER (28 Bytes):
+GET /index.html HTTP/1.1
+
+[4442] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "GET /index.html HTTP/1.1" 200 7582
+[4442] RESPONSE HEADER (198 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 7582
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4442] exited with 0
+[4443] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4443] REQUEST HEADER (29 Bytes):
+HEAD /index.html HTTP/1.1
+
+[4443] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "HEAD /index.html HTTP/1.1" 200 7582
+[4443] RESPONSE HEADER (198 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 7582
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4443] exited with 0
+[4444] HTTP method is not supported!
+[4444] Good Bye[1]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4444] REQUEST HEADER (32 Bytes):
+OPTIONS /index.html HTTP/1.1
+
+[4444] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "OPTIONS /index.html HTTP/1.1" 501 252
+[4444] RESPONSE HEADER (165 Bytes):
+HTTP/1.1 501 Not Implemented
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Accept-Ranges: bytes
+Content-Length: 252
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4444] exited with 1
+[4445] HTTP method is not supported!
+[4445] Good Bye[1]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4445] REQUEST HEADER (29 Bytes):
+POST /index.html HTTP/1.1
+
+[4445] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "POST /index.html HTTP/1.1" 501 252
+[4445] RESPONSE HEADER (165 Bytes):
+HTTP/1.1 501 Not Implemented
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Accept-Ranges: bytes
+Content-Length: 252
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4445] exited with 1
+[4446] HTTP method is not supported!
+[4446] Good Bye[1]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4446] REQUEST HEADER (28 Bytes):
+PUT /index.html HTTP/1.1
+
+[4446] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "PUT /index.html HTTP/1.1" 501 252
+[4446] RESPONSE HEADER (165 Bytes):
+HTTP/1.1 501 Not Implemented
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Accept-Ranges: bytes
+Content-Length: 252
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4446] exited with 1
+[4447] HTTP method is not supported!
+[4447] Good Bye[1]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4447] REQUEST HEADER (31 Bytes):
+DELETE /index.html HTTP/1.1
+
+[4447] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "DELETE /index.html HTTP/1.1" 501 252
+[4447] RESPONSE HEADER (165 Bytes):
+HTTP/1.1 501 Not Implemented
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Accept-Ranges: bytes
+Content-Length: 252
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4447] exited with 1
+[4448] HTTP method is not supported!
+[4448] Good Bye[1]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4448] REQUEST HEADER (30 Bytes):
+TRACE /index.html HTTP/1.1
+
+[4448] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "TRACE /index.html HTTP/1.1" 501 252
+[4448] RESPONSE HEADER (165 Bytes):
+HTTP/1.1 501 Not Implemented
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Accept-Ranges: bytes
+Content-Length: 252
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4448] exited with 1
+[4449] HTTP method is not supported!
+[4449] Good Bye[1]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4449] REQUEST HEADER (32 Bytes):
+CONNECT /index.html HTTP/1.1
+
+[4449] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "CONNECT /index.html HTTP/1.1" 501 252
+[4449] RESPONSE HEADER (165 Bytes):
+HTTP/1.1 501 Not Implemented
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Accept-Ranges: bytes
+Content-Length: 252
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4449] exited with 1
+[4450] HTTP method is not supported!
+[4450] Good Bye[1]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4450] REQUEST HEADER (30 Bytes):
+DUMMY /index.html HTTP/1.1
+
+[4450] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "DUMMY /index.html HTTP/1.1" 501 252
+[4450] RESPONSE HEADER (165 Bytes):
+HTTP/1.1 501 Not Implemented
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Accept-Ranges: bytes
+Content-Length: 252
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4450] exited with 1
+[4452] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4452] REQUEST HEADER (169 Bytes):
+GET /index.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/02basic.t
+
+[4452] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "GET /index.html HTTP/1.1" 200 7582
+[4452] RESPONSE HEADER (198 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 7582
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4452] exited with 0
+[4453] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4453] REQUEST HEADER (170 Bytes):
+HEAD /index.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/02basic.t
+
+[4453] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "HEAD /index.html HTTP/1.1" 200 7582
+[4453] RESPONSE HEADER (198 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 7582
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4453] exited with 0
+[4454] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4454] REQUEST HEADER (176 Bytes):
+GET /index%20copy.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/02basic.t
+
+[4454] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "GET /index%20copy.html HTTP/1.1" 200 7582
+[4454] RESPONSE HEADER (198 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 7582
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4454] exited with 0
+[4455] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4455] REQUEST HEADER (177 Bytes):
+HEAD /index%20copy.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/02basic.t
+
+[4455] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "HEAD /index%20copy.html HTTP/1.1" 200 7582
+[4455] RESPONSE HEADER (198 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 7582
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4455] exited with 0
+[4456] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4456] REQUEST HEADER (184 Bytes):
+HEAD /images/computerhead1.gif HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/02basic.t
+
+[4456] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "HEAD /images/computerhead1.gif HTTP/1.1" 200 8880
+[4456] RESPONSE HEADER (198 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 8880
+Content-Type: image/gif
+Connection: close
+
+[4411] New client
+[4411] Child[4456] exited with 0
+[4457] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4457] REQUEST HEADER (183 Bytes):
+GET /images/computerhead1.gif HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/02basic.t
+
+[4457] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "GET /images/computerhead1.gif HTTP/1.1" 200 8880
+[4457] RESPONSE HEADER (198 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 8880
+Content-Type: image/gif
+Connection: close
+
+[4411] New client
+[4411] Child[4457] exited with 0
+[4458] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4458] REQUEST HEADER (171 Bytes):
+HEAD /example.pdf HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/02basic.t
+
+[4458] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "HEAD /example.pdf HTTP/1.1" 200 148019
+[4458] RESPONSE HEADER (206 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 148019
+Content-Type: application/pdf
+Connection: close
+
+[4411] New client
+[4411] Child[4458] exited with 0
+[4459] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4459] REQUEST HEADER (170 Bytes):
+GET /example.pdf HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/02basic.t
+
+[4459] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "GET /example.pdf HTTP/1.1" 200 148019
+[4459] RESPONSE HEADER (206 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 148019
+Content-Type: application/pdf
+Connection: close
+
+[4411] New client
+[4411] Child[4459] exited with 0
+[4460] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4460] REQUEST HEADER (175 Bytes):
+HEAD /css/default.css HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/02basic.t
+
+[4460] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "HEAD /css/default.css HTTP/1.1" 200 890
+[4460] RESPONSE HEADER (196 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 890
+Content-Type: text/css
+Connection: close
+
+[4411] New client
+[4411] Child[4460] exited with 0
+[4461] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4461] REQUEST HEADER (174 Bytes):
+GET /css/default.css HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/02basic.t
+
+[4461] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "GET /css/default.css HTTP/1.1" 200 890
+[4461] RESPONSE HEADER (196 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 890
+Content-Type: text/css
+Connection: close
+
+[4411] New client
+[4411] Child[4461] exited with 0
+[4462] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4462] REQUEST HEADER (174 Bytes):
+HEAD /blablabla.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/02basic.t
+
+[4462] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "HEAD /blablabla.html HTTP/1.1" 404 248
+[4462] RESPONSE HEADER (159 Bytes):
+HTTP/1.1 404 Not Found
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Accept-Ranges: bytes
+Content-Length: 248
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4462] exited with 0
+[4463] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4463] REQUEST HEADER (173 Bytes):
+GET /blablabla.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/02basic.t
+
+[4463] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "GET /blablabla.html HTTP/1.1" 404 248
+[4463] RESPONSE HEADER (159 Bytes):
+HTTP/1.1 404 Not Found
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Accept-Ranges: bytes
+Content-Length: 248
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4463] exited with 0
+[4464] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4464] REQUEST HEADER (172 Bytes):
+HEAD /longtext.txt HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/02basic.t
+
+[4464] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "HEAD /longtext.txt HTTP/1.1" 200 80000051
+[4464] RESPONSE HEADER (203 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 80000051
+Content-Type: text/plain
+Connection: close
+
+[4411] New client
+[4411] Child[4464] exited with 0
+[4465] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4465] REQUEST HEADER (171 Bytes):
+GET /longtext.txt HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/02basic.t
+
+[4465] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:31 +0000 "GET /longtext.txt HTTP/1.1" 200 80000051
+[4465] RESPONSE HEADER (203 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:31 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 80000051
+Content-Type: text/plain
+Connection: close
+
+[4411] New client
+[4411] Child[4465] exited with 0
+[4467] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4467] REQUEST HEADER (155 Bytes):
+GET /index.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/02mime.t
+
+[4467] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /index.html HTTP/1.1" 200 7582
+[4467] RESPONSE HEADER (198 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 7582
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4467] exited with 0
+[4468] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4468] REQUEST HEADER (156 Bytes):
+HEAD /index.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/02mime.t
+
+[4468] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "HEAD /index.html HTTP/1.1" 200 7582
+[4468] RESPONSE HEADER (198 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 7582
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4468] exited with 0
+[4469] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4469] REQUEST HEADER (170 Bytes):
+HEAD /images/computerhead1.gif HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/02mime.t
+
+[4469] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "HEAD /images/computerhead1.gif HTTP/1.1" 200 8880
+[4469] RESPONSE HEADER (198 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 8880
+Content-Type: image/gif
+Connection: close
+
+[4411] New client
+[4411] Child[4469] exited with 0
+[4470] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4470] REQUEST HEADER (169 Bytes):
+GET /images/computerhead1.gif HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/02mime.t
+
+[4470] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /images/computerhead1.gif HTTP/1.1" 200 8880
+[4470] RESPONSE HEADER (198 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 8880
+Content-Type: image/gif
+Connection: close
+
+[4411] New client
+[4411] Child[4470] exited with 0
+[4471] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4471] REQUEST HEADER (175 Bytes):
+HEAD /images/computerhead1.html.gif HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/02mime.t
+
+[4471] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "HEAD /images/computerhead1.html.gif HTTP/1.1" 200 8880
+[4471] RESPONSE HEADER (198 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 8880
+Content-Type: image/gif
+Connection: close
+
+[4411] New client
+[4411] Child[4471] exited with 0
+[4472] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4472] REQUEST HEADER (174 Bytes):
+GET /images/computerhead1.html.gif HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/02mime.t
+
+[4472] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /images/computerhead1.html.gif HTTP/1.1" 200 8880
+[4472] RESPONSE HEADER (198 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 8880
+Content-Type: image/gif
+Connection: close
+
+[4411] New client
+[4411] Child[4472] exited with 0
+[4473] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4473] REQUEST HEADER (157 Bytes):
+HEAD /example.pdf HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/02mime.t
+
+[4473] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "HEAD /example.pdf HTTP/1.1" 200 148019
+[4473] RESPONSE HEADER (206 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 148019
+Content-Type: application/pdf
+Connection: close
+
+[4411] New client
+[4411] Child[4473] exited with 0
+[4474] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4474] REQUEST HEADER (156 Bytes):
+GET /example.pdf HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/02mime.t
+
+[4474] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /example.pdf HTTP/1.1" 200 148019
+[4474] RESPONSE HEADER (206 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 148019
+Content-Type: application/pdf
+Connection: close
+
+[4411] New client
+[4411] Child[4474] exited with 0
+[4475] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4475] REQUEST HEADER (161 Bytes):
+HEAD /css/default.css HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/02mime.t
+
+[4475] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "HEAD /css/default.css HTTP/1.1" 200 890
+[4475] RESPONSE HEADER (196 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 890
+Content-Type: text/css
+Connection: close
+
+[4411] New client
+[4411] Child[4475] exited with 0
+[4476] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4476] REQUEST HEADER (160 Bytes):
+GET /css/default.css HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/02mime.t
+
+[4476] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /css/default.css HTTP/1.1" 200 890
+[4476] RESPONSE HEADER (196 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 890
+Content-Type: text/css
+Connection: close
+
+[4411] New client
+[4411] Child[4476] exited with 0
+[4477] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4477] REQUEST HEADER (155 Bytes):
+GET /zeros1.jpg HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/02mime.t
+
+[4477] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /zeros1.jpg HTTP/1.1" 200 1
+[4477] RESPONSE HEADER (196 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 1
+Content-Type: image/jpeg
+Connection: close
+
+[4411] New client
+[4411] Child[4477] exited with 0
+[4478] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4478] REQUEST HEADER (155 Bytes):
+GET /zeros2.jpg HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/02mime.t
+
+[4478] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /zeros2.jpg HTTP/1.1" 200 1024
+[4478] RESPONSE HEADER (199 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 1024
+Content-Type: image/jpeg
+Connection: close
+
+[4411] New client
+[4411] Child[4478] exited with 0
+[4479] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4479] REQUEST HEADER (155 Bytes):
+GET /zeros3.jpg HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/02mime.t
+
+[4479] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /zeros3.jpg HTTP/1.1" 200 20000
+[4479] RESPONSE HEADER (200 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 20000
+Content-Type: image/jpeg
+Connection: close
+
+[4411] New client
+[4411] Child[4479] exited with 0
+[4481] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4481] REQUEST HEADER (168 Bytes):
+GET /zeros1.jpg HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/02zero.t
+
+[4481] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /zeros1.jpg HTTP/1.1" 200 1
+[4481] RESPONSE HEADER (196 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 1
+Content-Type: image/jpeg
+Connection: close
+
+[4411] New client
+[4411] Child[4481] exited with 0
+[4482] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4482] REQUEST HEADER (168 Bytes):
+GET /zeros2.jpg HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/02zero.t
+
+[4482] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /zeros2.jpg HTTP/1.1" 200 1024
+[4482] RESPONSE HEADER (199 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 1024
+Content-Type: image/jpeg
+Connection: close
+
+[4411] New client
+[4411] Child[4482] exited with 0
+[4483] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4483] REQUEST HEADER (168 Bytes):
+GET /zeros3.jpg HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/02zero.t
+
+[4483] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /zeros3.jpg HTTP/1.1" 200 20000
+[4483] RESPONSE HEADER (200 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 20000
+Content-Type: image/jpeg
+Connection: close
+
+[4411] New client
+[4411] Child[4483] exited with 0
+[4485] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4485] REQUEST HEADER (150 Bytes):
+HEAD /css HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/03moved.t
+
+[4485] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "HEAD /css HTTP/1.1" 301 246
+[4485] RESPONSE HEADER (204 Bytes):
+HTTP/1.1 301 Moved Permanently
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Accept-Ranges: bytes
+Content-Length: 246
+Content-Type: text/html
+Location: http://localhost:8080/css/
+Connection: close
+
+[4411] New client
+[4411] Child[4485] exited with 0
+[4486] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4486] REQUEST HEADER (149 Bytes):
+GET /css HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/03moved.t
+
+[4486] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /css HTTP/1.1" 301 246
+[4486] RESPONSE HEADER (204 Bytes):
+HTTP/1.1 301 Moved Permanently
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Accept-Ranges: bytes
+Content-Length: 246
+Content-Type: text/html
+Location: http://localhost:8080/css/
+Connection: close
+
+[4411] New client
+[4411] Child[4486] exited with 0
+[4487] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4487] REQUEST HEADER (153 Bytes):
+HEAD /source HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/03moved.t
+
+[4487] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "HEAD /source HTTP/1.1" 301 246
+[4487] RESPONSE HEADER (207 Bytes):
+HTTP/1.1 301 Moved Permanently
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Accept-Ranges: bytes
+Content-Length: 246
+Content-Type: text/html
+Location: http://localhost:8080/source/
+Connection: close
+
+[4411] New client
+[4411] Child[4487] exited with 0
+[4488] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4488] REQUEST HEADER (152 Bytes):
+GET /source HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Host: localhost:8080
+User-Agent: TinyWeb Test Harness, Test Script t/03moved.t
+
+[4488] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /source HTTP/1.1" 301 246
+[4488] RESPONSE HEADER (207 Bytes):
+HTTP/1.1 301 Moved Permanently
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Accept-Ranges: bytes
+Content-Length: 246
+Content-Type: text/html
+Location: http://localhost:8080/source/
+Connection: close
+
+[4411] New client
+[4411] Child[4488] exited with 0
+[4490] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4490] REQUEST HEADER (236 Bytes):
+GET /images/computerhead1.gif HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+If-Modified-Since: Sun, 07 Jun 2015 19:51:51 GMT
+User-Agent: TinyWeb Test Harness, Test Script t/04modsince.t
+
+[4490] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /images/computerhead1.gif HTTP/1.1" 304 0
+[4490] RESPONSE HEADER (187 Bytes):
+HTTP/1.1 304 Not Modified
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Type: image/gif
+Connection: close
+
+[4411] New client
+[4411] Child[4490] exited with 0
+[4491] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4491] REQUEST HEADER (236 Bytes):
+GET /images/computerhead1.gif HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+If-Modified-Since: Sun, 07 Jun 2015 19:51:52 GMT
+User-Agent: TinyWeb Test Harness, Test Script t/04modsince.t
+
+[4491] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /images/computerhead1.gif HTTP/1.1" 304 0
+[4491] RESPONSE HEADER (187 Bytes):
+HTTP/1.1 304 Not Modified
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Type: image/gif
+Connection: close
+
+[4411] New client
+[4411] Child[4491] exited with 0
+[4492] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4492] REQUEST HEADER (236 Bytes):
+GET /images/computerhead1.gif HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+If-Modified-Since: Sun, 07 Jun 2015 19:51:50 GMT
+User-Agent: TinyWeb Test Harness, Test Script t/04modsince.t
+
+[4492] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /images/computerhead1.gif HTTP/1.1" 200 8880
+[4492] RESPONSE HEADER (198 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 8880
+Content-Type: image/gif
+Connection: close
+
+[4411] New client
+[4411] Child[4492] exited with 0
+[4493] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4493] REQUEST HEADER (236 Bytes):
+GET /images/computerhead1.gif HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+If-Modified-Since: Sun, 07 Jun 2015 20:45:12 GMT
+User-Agent: TinyWeb Test Harness, Test Script t/04modsince.t
+
+[4493] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /images/computerhead1.gif HTTP/1.1" 304 0
+[4493] RESPONSE HEADER (187 Bytes):
+HTTP/1.1 304 Not Modified
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Type: image/gif
+Connection: close
+
+[4411] New client
+[4411] Child[4493] exited with 0
+[4494] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4494] REQUEST HEADER (236 Bytes):
+GET /images/computerhead1.gif HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+If-Modified-Since: Sun, 07 Jun 2015 18:58:30 GMT
+User-Agent: TinyWeb Test Harness, Test Script t/04modsince.t
+
+[4494] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /images/computerhead1.gif HTTP/1.1" 200 8880
+[4494] RESPONSE HEADER (198 Bytes):
+HTTP/1.1 200 OK
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Length: 8880
+Content-Type: image/gif
+Connection: close
+
+[4411] New client
+[4411] Child[4494] exited with 0
+[4496] Range is out of file!
+[4496] Good Bye[1]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4496] REQUEST HEADER (189 Bytes):
+GET /index.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+Range: bytes=7582-
+User-Agent: TinyWeb Test Harness, Test Script t/04range.t
+
+[4496] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /index.html HTTP/1.1" 416 0
+[4496] RESPONSE HEADER (231 Bytes):
+HTTP/1.1 416 Requested Range Not Satisfiable
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Range: bytes */0
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4496] exited with 1
+[4497] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4497] REQUEST HEADER (189 Bytes):
+GET /index.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+Range: bytes=1000-
+User-Agent: TinyWeb Test Harness, Test Script t/04range.t
+
+[4497] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /index.html HTTP/1.1" 206 6582
+[4497] RESPONSE HEADER (247 Bytes):
+HTTP/1.1 206 Partial Content
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Range: bytes 1000-7581/7582
+Content-Length: 6582
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4497] exited with 0
+[4498] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4498] REQUEST HEADER (186 Bytes):
+GET /index.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+Range: bytes=1-
+User-Agent: TinyWeb Test Harness, Test Script t/04range.t
+
+[4498] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /index.html HTTP/1.1" 206 7581
+[4498] RESPONSE HEADER (244 Bytes):
+HTTP/1.1 206 Partial Content
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Range: bytes 1-7581/7582
+Content-Length: 7581
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4498] exited with 0
+[4499] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4499] REQUEST HEADER (189 Bytes):
+GET /index.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+Range: bytes=7581-
+User-Agent: TinyWeb Test Harness, Test Script t/04range.t
+
+[4499] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /index.html HTTP/1.1" 206 1
+[4499] RESPONSE HEADER (244 Bytes):
+HTTP/1.1 206 Partial Content
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Range: bytes 7581-7581/7582
+Content-Length: 1
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4499] exited with 0
+[4500] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4500] REQUEST HEADER (189 Bytes):
+GET /index.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+Range: bytes=7083-
+User-Agent: TinyWeb Test Harness, Test Script t/04range.t
+
+[4500] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /index.html HTTP/1.1" 206 499
+[4500] RESPONSE HEADER (246 Bytes):
+HTTP/1.1 206 Partial Content
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Range: bytes 7083-7581/7582
+Content-Length: 499
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4500] exited with 0
+[4501] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4501] REQUEST HEADER (188 Bytes):
+GET /index.html HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+Range: bytes=500-
+User-Agent: TinyWeb Test Harness, Test Script t/04range.t
+
+[4501] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /index.html HTTP/1.1" 206 7082
+[4501] RESPONSE HEADER (246 Bytes):
+HTTP/1.1 206 Partial Content
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Range: bytes 500-7581/7582
+Content-Length: 7082
+Content-Type: text/html
+Connection: close
+
+[4411] New client
+[4411] Child[4501] exited with 0
+[4502] Range is out of file!
+[4502] Good Bye[1]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4502] REQUEST HEADER (203 Bytes):
+GET /images/computerhead1.gif HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+Range: bytes=8880-
+User-Agent: TinyWeb Test Harness, Test Script t/04range.t
+
+[4502] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /images/computerhead1.gif HTTP/1.1" 416 0
+[4502] RESPONSE HEADER (231 Bytes):
+HTTP/1.1 416 Requested Range Not Satisfiable
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Range: bytes */0
+Content-Type: image/gif
+Connection: close
+
+[4411] New client
+[4411] Child[4502] exited with 1
+[4503] Range is out of file!
+[4503] Good Bye[1]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4503] REQUEST HEADER (205 Bytes):
+GET /images/computerhead1.gif HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+Range: bytes=100000-
+User-Agent: TinyWeb Test Harness, Test Script t/04range.t
+
+[4503] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /images/computerhead1.gif HTTP/1.1" 416 0
+[4503] RESPONSE HEADER (231 Bytes):
+HTTP/1.1 416 Requested Range Not Satisfiable
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Range: bytes */0
+Content-Type: image/gif
+Connection: close
+
+[4411] New client
+[4411] Child[4503] exited with 1
+[4504] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4504] REQUEST HEADER (200 Bytes):
+GET /images/computerhead1.gif HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+Range: bytes=0-
+User-Agent: TinyWeb Test Harness, Test Script t/04range.t
+
+[4504] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /images/computerhead1.gif HTTP/1.1" 206 8880
+[4504] RESPONSE HEADER (244 Bytes):
+HTTP/1.1 206 Partial Content
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Range: bytes 0-8879/8880
+Content-Length: 8880
+Content-Type: image/gif
+Connection: close
+
+[4411] New client
+[4411] Child[4504] exited with 0
+[4505] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4505] REQUEST HEADER (200 Bytes):
+GET /images/computerhead1.gif HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+Range: bytes=1-
+User-Agent: TinyWeb Test Harness, Test Script t/04range.t
+
+[4505] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /images/computerhead1.gif HTTP/1.1" 206 8879
+[4505] RESPONSE HEADER (244 Bytes):
+HTTP/1.1 206 Partial Content
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Range: bytes 1-8879/8880
+Content-Length: 8879
+Content-Type: image/gif
+Connection: close
+
+[4411] New client
+[4411] Child[4505] exited with 0
+[4506] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4506] REQUEST HEADER (203 Bytes):
+GET /images/computerhead1.gif HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+Range: bytes=8879-
+User-Agent: TinyWeb Test Harness, Test Script t/04range.t
+
+[4506] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /images/computerhead1.gif HTTP/1.1" 206 1
+[4506] RESPONSE HEADER (244 Bytes):
+HTTP/1.1 206 Partial Content
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Range: bytes 8879-8879/8880
+Content-Length: 1
+Content-Type: image/gif
+Connection: close
+
+[4411] New client
+[4411] Child[4506] exited with 0
+[4507] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4507] REQUEST HEADER (203 Bytes):
+GET /images/computerhead1.gif HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+Range: bytes=8381-
+User-Agent: TinyWeb Test Harness, Test Script t/04range.t
+
+[4507] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /images/computerhead1.gif HTTP/1.1" 206 499
+[4507] RESPONSE HEADER (246 Bytes):
+HTTP/1.1 206 Partial Content
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Range: bytes 8381-8879/8880
+Content-Length: 499
+Content-Type: image/gif
+Connection: close
+
+[4411] New client
+[4411] Child[4507] exited with 0
+[4508] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+[4508] REQUEST HEADER (202 Bytes):
+GET /images/computerhead1.gif HTTP/1.1
+TE: deflate,gzip;q=0.3
+Connection: TE, close
+Accept: */*
+Host: localhost:8080
+Range: bytes=500-
+User-Agent: TinyWeb Test Harness, Test Script t/04range.t
+
+[4508] ::ffff:127.0.0.1 - - 15/Jul/2015:06:43:32 +0000 "GET /images/computerhead1.gif HTTP/1.1" 206 8380
+[4508] RESPONSE HEADER (246 Bytes):
+HTTP/1.1 206 Partial Content
+Date: Wed, 15 Jul 2015 06:43:32 GMT
+Server: Tinyweb
+Last-Modified: Sun, 07 Jun 2015 19:51:51 GMT
+Accept-Ranges: bytes
+Content-Range: bytes 500-8879/8880
+Content-Length: 8380
+Content-Type: image/gif
+Connection: close
+
+[4411] New client
+[4411] Child[4508] exited with 0
+
+[4411] Server terminated due to keyboard interrupt
+[4411] New client
+[4411] Failed to accept client! / Server gets shut down... 
+[4411] Child[4510] exited with 0
+[4411] Good Bye[0]...
+Note: logging is redirected to stdout.
+[4411] Starting server 'tinyweb_debug on port 8080'...
+Exit status:  0
