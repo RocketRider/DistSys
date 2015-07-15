@@ -161,8 +161,7 @@ int static server_execute_cgi(http_request_t *request) //'Is executable' is alre
 
 
 	//Date
-	time_t t = time(NULL);
-	struct tm *my_tm = gmtime(&t);
+	struct tm *my_tm = gmtime(&(request->request_time));
 	strftime(request->response_buffer + strlen(request->response_buffer), HTTP_MAX_HEADERSIZE - strlen(request->response_buffer), "Date: %a, %d %b %Y %H:%M:%S GMT\n", my_tm);
 
 
@@ -184,8 +183,9 @@ int static server_execute_cgi(http_request_t *request) //'Is executable' is alre
 	//execl failed:
 	dup2(saved_stdout, STDOUT_FILENO);
 	err_print("execl failed!");
-	exit(EXIT_FAILURE);
-
+	request->response_status = HTTP_STATUS_INTERNAL_SERVER_ERROR;
+	server_answer_error(request);
+	return -1;
 }
 
 
