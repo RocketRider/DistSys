@@ -25,7 +25,11 @@ Der Test "mime" wurde um zwei Test mit 'zwei endungen' erweitert um die Robusthe
 [ { method => 'HEAD', url => "/images/computerhead1.html.gif", status => 200 } ],
 [ { method => 'GET',  url => "/images/computerhead1.html.gif", status => 200 } ],
 
-Anbei sehen Sie die verbose Ausgabe des Servers. Diese beinhaltet die Request und Response Header:
+Des weiteren wurde der Server auch über Valgrind während der Ausführung der Tests überwacht (siehe valgrind_log.txt), hierbei einstanden 0 Fehler.
+Somit wurden alle Speicherbereiche richtig wieder Freigegeben und auf kein Speicher ohne Erlaubnis zugegriffen.
+
+Anbei sehen Sie die verbose Ausgabe des Servers. Diese beinhaltet die Request und Response Header.
+
 
 
 

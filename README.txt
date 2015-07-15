@@ -2,7 +2,8 @@
 Autoren: Ralf Reutemann, Michael Möbius, Maximilian Schmitz
 
 Testergebnisse:
--Test_log.txt Beschreibung und Protokolle (Request und Response Header) der Tests
+-Test_log.txt 		Beschreibung und Protokolle (Request und Response Header) der Tests
+-valgrind_log.txt	Test Protokoll mit Valgrind
 -testlog.tar.gz
 
 Run-Skripte:
