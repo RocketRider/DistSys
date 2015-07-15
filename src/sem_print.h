@@ -7,13 +7,12 @@
  * 			  Michael Möbius
  * 			  Maximilian Schmitz
  *
+ * Modul: async-signal-safe wrapper for printf für error, log und debug Ausgaben
+ *
  *===================================================================*/
-
 #ifndef _SEM_PRINT_H
 #define _SEM_PRINT_H
-
 #include <semaphore.h>
-
 
 extern void init_logging_semaphore(void);
 extern void free_logging_semaphore(void);

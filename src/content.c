@@ -7,8 +7,9 @@
  * 			  Michael Möbius
  * 			  Maximilian Schmitz
  *
+ * Modul: Ermitteln des MIME-TYPES von Dateien
+ *
  *===================================================================*/
-
 #include <string.h>
 #include "content.h"
 #include <stdio.h>
@@ -28,36 +29,32 @@ static http_content_type_entry_t http_content_type_list[] = {
 
 /*
  * Name: get_http_content_type
- * Zweck: Auflösen des Http Content Type anhand der Dateiendung
+ * Zweck: Ermitteln des Http Content Type anhand der Dateiendung
  * In-Parameter: char *filename (Dateiname)
  * Out-Parameter: -
  * Globale Variablen: -
  * Rückgabewert: http_content_type_t (Content Type der Datei)
  */
-http_content_type_t
-get_http_content_type(const char *filename)
-{
-    int i;
+http_content_type_t get_http_content_type(const char *filename) {
+	int i;
 
-    //To find last dot in the filename to make sure filenames like test.gif.html work as well!
-    char* pch=strchr(filename,'.');
-    while (pch!=NULL)
-    {
-      filename = pch;
-      pch=strchr(filename+1,'.');
-    }
+	//To find last dot in the filename to make sure filenames like test.gif.html work as well!
+	char* pch = strchr(filename, '.');
+	while (pch != NULL) {
+		filename = pch;
+		pch = strchr(filename + 1, '.');
+	}
 
-    i = 0;
-    while (http_content_type_list[i].ext != NULL) {
-		if (strcasecmp(filename, http_content_type_list[i].ext) == 0) {	//To make sure .HTML does work as well
-            break;
-        } /* end if */
-        i++;
-    } /* end while */
+	i = 0;
+	while (http_content_type_list[i].ext != NULL) {
+		if (strcasecmp(filename, http_content_type_list[i].ext) == 0) { //To make sure .HTML does work as well
+			break;
+		} /* end if */
+		i++;
+	} /* end while */
 
-    return (http_content_type_t)i;
+	return (http_content_type_t) i;
 } /* end of get_http_content_type */
-
 
 /*
  * Name: get_http_content_type_str
@@ -68,8 +65,7 @@ get_http_content_type(const char *filename)
  * Rückgabewert: char* (Http Content Type als c_string)
  */
 char *
-get_http_content_type_str(const http_content_type_t type)
-{
-    return http_content_type_list[type].name;
+get_http_content_type_str(const http_content_type_t type) {
+	return http_content_type_list[type].name;
 } /* end of get_http_content_type_str */
 

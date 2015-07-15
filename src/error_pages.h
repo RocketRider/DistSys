@@ -7,11 +7,12 @@
  * 			  Michael Möbius
  * 			  Maximilian Schmitz (person in charge)
  *
+ *Modul: Definition der HTML Error Seiten
+ *
  *===================================================================*/
 
 #ifndef _ERROR_PAGES_H
 #define _ERROR_PAGES_H
-
 
 #define HTML_500 \
 "<!DOCTYPE html PUBLIC '-//IETF//DTD HTML 2.0//EN'>\n"\
@@ -29,7 +30,6 @@
 "\r\n"\
 "\r\n"
 
-
 #define HTML_301 \
 "<!DOCTYPE html PUBLIC '-//IETF//DTD HTML 2.0//EN'>\n"\
 "<HTML>\n"\
@@ -45,8 +45,6 @@
 "</HTML>\n"\
 "\r\n"\
 "\r\n"
-
-
 
 #define HTML_400 \
 "<!DOCTYPE html PUBLIC '-//IETF//DTD HTML 2.0//EN'>\n"\
@@ -111,6 +109,5 @@
 "</HTML>\n"\
 "\r\n"\
 "\r\n"
-
 
 #endif

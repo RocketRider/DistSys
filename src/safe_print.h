@@ -7,6 +7,8 @@
  * 			  Michael Möbius
  * 			  Maximilian Schmitz
  *
+ * Modul: async-signal-safe wrapper for printf
+ *
  *===================================================================*/
 
 #ifndef _SAFE_PRINT_H

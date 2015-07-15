@@ -7,11 +7,9 @@
  * 			  Michael Möbius
  * 			  Maximilian Schmitz
  *
+ * Modul: Hauptprogram, verarbeitet Parameter, startet den server und sammelt Kindprozesse wieder ein
+ *
  *===================================================================*/
-//
-// TODO: Include your module header here
-//
-
 #ifndef _TINYWEB_H
 #define _TINYWEB_H
 

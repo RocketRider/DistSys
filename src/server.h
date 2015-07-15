@@ -7,6 +7,8 @@
  * 			  Michael Möbius (person in charge)
  * 			  Maximilian Schmitz
  *
+ * Modul: Verwaltung der Socket verbindung zum Client und Abarbeitung der Requests
+ *
  *===================================================================*/
 
 
