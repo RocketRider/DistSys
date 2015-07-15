@@ -9,7 +9,7 @@ DIR=${1:-web}
 # Do not check whether the root directory exists at this level.
 # Let tinyweb deal with it...
 #./build/$BUILD_DIR/tinyweb_debug -p 8080 -d ${DIR} -f -
-gdb --args ./build/$BUILD_DIR/tinyweb_debug -p 8080 -d ${DIR} -f -
+gdb --args ./build/$BUILD_DIR/tinyweb_debug -p 8080 -v -d ${DIR} -f -
 
 echo "Exit status: " $?
 
