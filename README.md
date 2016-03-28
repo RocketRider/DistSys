@@ -1,3 +1,4 @@
+Basiert auf https://github.com/rdrcode/distsys
 
 Hier ein paar Hinweise zum Programmentwurf Support-Addon
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
